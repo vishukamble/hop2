@@ -1,3 +1,7 @@
+![hop2](assets/logos/hop2-logo-wide.svg)
+
+Quick directory jumping and command aliasing for your terminal
+
 # hop2 🚀
 
 Quick directory jumping and command aliasing for your terminal. Like `z` or `autojump`, but simpler.

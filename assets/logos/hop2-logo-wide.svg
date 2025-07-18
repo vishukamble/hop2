@@ -1,0 +1,20 @@
+<svg width="180" height="60" viewBox="0 0 180 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Just the essentials for header/README use -->
+
+  <!-- Terminal prompt -->
+  <text x="5" y="35" font-family="Consolas, Monaco, monospace" font-size="32" font-weight="bold" fill="#00ff88">$</text>
+
+  <!-- hop2 text -->
+  <text x="35" y="35" font-family="Consolas, Monaco, monospace" font-size="28" font-weight="500" fill="#e1e1e1">hop2</text>
+
+  <!-- Simple hop indicator -->
+  <g>
+    <circle cx="125" cy="30" r="3" fill="#00ff88" opacity="0.4"/>
+    <circle cx="140" cy="22" r="3" fill="#00ff88" opacity="0.7"/>
+    <circle cx="155" cy="30" r="4" fill="#00ff88"/>
+
+    <!-- Connecting arcs -->
+    <path d="M 125 30 Q 132.5 20, 140 22" stroke="#00ff88" stroke-width="2" fill="none" opacity="0.5"/>
+    <path d="M 140 22 Q 147.5 20, 155 30" stroke="#00ff88" stroke-width="2" fill="none" opacity="0.7"/>
+  </g>
+</svg>

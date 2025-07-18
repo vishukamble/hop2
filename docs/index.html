@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-logo.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>hop2 - Quick directory jumping for your terminal</title>
@@ -41,6 +42,19 @@
             text-align: center;
             padding: 4rem 0 3rem;
             position: relative;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+            display: block;
+            animation: fadeIn 1s forwards, float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
         }
 
         h1 {
@@ -378,6 +392,7 @@
     <div class="container">
         <header>
             <div class="greeting" id="greeting"></div>
+            <img src="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-logo.svg" alt="hop2 logo" class="logo">
             <h1>hop2</h1>
             <p class="tagline">Quick directory jumping and command aliasing for your terminal</p>
             <div class="badges">
