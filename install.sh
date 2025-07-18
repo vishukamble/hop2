@@ -28,11 +28,11 @@ mkdir -p ~/.hop2
 # Download files
 echo "Downloading hop2..."
 if command -v curl &> /dev/null; then
-    curl -sL https://raw.githubusercontent.com/YOUR_USERNAME/hop2/main/hop2.py -o /tmp/hop2
-    curl -sL https://raw.githubusercontent.com/YOUR_USERNAME/hop2/main/hop2.sh -o ~/.hop2/hop2.sh
+    curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/hop2.py -o /tmp/hop2
+    curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/hop2.sh -o ~/.hop2/hop2.sh
 elif command -v wget &> /dev/null; then
-    wget -q https://raw.githubusercontent.com/YOUR_USERNAME/hop2/main/hop2.py -O /tmp/hop2
-    wget -q https://raw.githubusercontent.com/YOUR_USERNAME/hop2/main/hop2.sh -O ~/.hop2/hop2.sh
+    wget -q https://raw.githubusercontent.com/vishukamble/hop2/main/hop2.py -O /tmp/hop2
+    wget -q https://raw.githubusercontent.com/vishukamble/hop2/main/hop2.sh -O ~/.hop2/hop2.sh
 else
     echo "Error: curl or wget is required for installation"
     exit 1
