@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/svg+xml" href="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-logo.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>hop2 - Quick directory jumping for your terminal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
     <style>
         :root {
             --bg: #0a0a0a;
@@ -159,16 +159,23 @@
 
         .feature-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(2, 1fr);
             gap: 2rem;
             margin: 2rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
         }
 
         .feature {
             background: var(--code-bg);
             border: 1px solid var(--border);
             border-radius: 0.5rem;
-            padding: 1.5rem;
+            padding: 2rem;
             transition: transform 0.2s, border-color 0.2s;
         }
 
@@ -179,7 +186,16 @@
 
         .feature h3 {
             color: var(--accent);
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feature p {
+            line-height: 1.7;
+            color: #ccc;
         }
 
         .installation-steps {
@@ -372,6 +388,32 @@
             color: var(--accent);
         }
 
+        .footer-stats {
+            margin: 2rem 0 1rem;
+        }
+
+        .footer-stats img {
+            height: 28px;
+            border-radius: 4px;
+        }
+
+        .claude-credit {
+            margin-top: 1.5rem;
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .claude-credit a {
+            color: var(--accent);
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .claude-credit a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
         @media (max-width: 768px) {
             h1 {
                 font-size: 3rem;
@@ -408,17 +450,12 @@
             </div>
             <div class="stats">
                 <div class="stat-item">
-                    <span id="visitor-count">
-                        <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fvishukamble.github.io%2Fhop2&count_bg=%2300FF88&title_bg=%231A1A1A&icon=&icon_color=%23E7E7E7&title=visitors&edge_flat=false" alt="Visitors" />
-                    </span>
-                </div>
-                <div class="stat-item">
                     <span id="current-time"></span>
                 </div>
             </div>
         </header>
 
-        <section class="section">
+        <section class="section demo demo-section">
             <h2>What is hop2?</h2>
             <p>Ever been 6 folders deep and need to jump somewhere else? Tired of typing long commands over and over?</p>
 
@@ -439,7 +476,7 @@
             </div>
         </section>
 
-        <section class="section">
+        <section class="section demo demo-section">
             <h2>Features</h2>
             <div class="feature-grid">
                 <div class="feature">
@@ -461,7 +498,7 @@
             </div>
         </section>
 
-        <section class="section">
+        <section class="section demo demo-section">
             <h2>Installation</h2>
             <div class="installation-steps">
                 <div class="step">
@@ -498,10 +535,10 @@
             </div>
         </section>
 
-        <section class="section">
+        <section class="section demo demo-section">
             <h2>Quick Demo</h2>
             <div class="terminal">
-                <pre><span class="comment"># Save your most-used directories</span>
+                <pre class="typing"><span class="comment"># Save your most-used directories</span>
 <span class="prompt">$</span> <span class="command">cd ~/work/frontend/src/components</span>
 <span class="prompt">$</span> <span class="command">hop2 add frontend</span>
 <span class="output">✓ Created: frontend → ~/work/frontend/src/components</span>
@@ -560,6 +597,10 @@
                 <a href="https://github.com/vishukamble/hop2/issues">Issues</a> ·
                 <a href="https://github.com/vishukamble/hop2/blob/main/LICENSE">MIT License</a>
             </p>
+            <div class="footer-stats">
+                <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fvishukamble.github.io%2Fhop2&count_bg=%2300FF88&title_bg=%231A1A1A&icon=&icon_color=%23E7E7E7&title=visitors&edge_flat=false" alt="Visitors" />
+            </div>
+            <p class="claude-credit">Vibe coded with <a href="https://claude.ai" target="_blank">Claude</a> 🤖</p>
         </footer>
     </div>
 
@@ -581,9 +622,7 @@
             else timeOfDay = 'night';
 
             const greetingList = greetings[timeOfDay];
-            const randomGreeting = greetingList[Math.floor(Math.random() * greetingList.length)];
-
-            return randomGreeting;
+            return greetingList[Math.floor(Math.random() * greetingList.length)];
         }
 
         // Update time
@@ -595,8 +634,7 @@
                 minute: '2-digit',
                 hour12: false
             };
-            const timeString = now.toLocaleString('en-US', options);
-            document.getElementById('current-time').textContent = timeString;
+            document.getElementById('current-time').textContent = now.toLocaleString('en-US', options);
         }
 
         // Initialize greeting and time
@@ -622,7 +660,7 @@
         });
 
         // Terminal typing effect for demo
-        const demoTerminal = document.querySelector('.demo .terminal pre');
+        const demoTerminal = document.querySelector('.demo-section .terminal pre');
         if (demoTerminal) {
             const originalContent = demoTerminal.innerHTML;
             demoTerminal.innerHTML = '';
