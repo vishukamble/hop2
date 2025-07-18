@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>hop2 - Quick directory jumping for your terminal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0a;
+            --fg: #e1e1e1;
+            --accent: #00ff88;
+            --accent-dim: #00cc6a;
+            --code-bg: #1a1a1a;
+            --border: #2a2a2a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            padding: 4rem 0 3rem;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1.25rem;
+            color: #999;
+            margin-bottom: 2rem;
+        }
+
+        .badges {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: var(--code-bg);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section {
+            margin: 4rem 0;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+        }
+
+        .terminal {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: 0.75rem;
+            left: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .terminal::before {
+            content: '● ● ●';
+            color: #666;
+            font-size: 0.75rem;
+            letter-spacing: 0.3rem;
+        }
+
+        .terminal pre {
+            margin-top: 1rem;
+        }
+
+        code {
+            font-family: 'JetBrains Mono', monospace;
+            background: var(--code-bg);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .comment {
+            color: #666;
+        }
+
+        .prompt {
+            color: var(--accent);
+        }
+
+        .command {
+            color: #fff;
+        }
+
+        .output {
+            color: #999;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .feature {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .feature:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent);
+        }
+
+        .feature h3 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .installation-steps {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .step {
+            margin: 1.5rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            background: var(--accent);
+            color: var(--bg);
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .greeting {
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .stats {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        #current-time {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+        }
+
+        #visitor-count img {
+            height: 28px;
+            border-radius: 4px;
+        }
+
+        .cta {
+            text-align: center;
+            margin: 4rem 0;
+        }
+
+        .button {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--bg);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .demo {
+            position: relative;
+            margin: 2rem 0;
+        }
+
+        @keyframes type {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        .typing {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid var(--accent);
+            animation: type 2s steps(30, end) forwards;
+        }
+
+        .contribute-section {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 3rem;
+            margin: 4rem 0;
+        }
+
+        .contribute-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .contribute-card {
+            text-align: center;
+        }
+
+        .contribute-card h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .contribute-card p {
+            margin-bottom: 1rem;
+            color: #ccc;
+        }
+
+        .contribute-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .contribute-link:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        .contribute-note {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            color: #999;
+        }
+
+        .button-outline {
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+            margin-left: 1rem;
+        }
+
+        .button-outline:hover {
+            background: var(--accent);
+            color: var(--bg);
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 0;
+            color: #666;
+            border-top: 1px solid var(--border);
+            margin-top: 6rem;
+        }
+
+        .footer-links {
+            margin-top: 1rem;
+        }
+
+        .footer-links a {
+            color: #999;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 3rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .button-outline {
+                display: block;
+                margin: 1rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="greeting" id="greeting"></div>
+            <h1>hop2</h1>
+            <p class="tagline">Quick directory jumping and command aliasing for your terminal</p>
+            <div class="badges">
+                <div class="badge">
+                    <span>✨</span> Zero dependencies
+                </div>
+                <div class="badge">
+                    <span>🐍</span> Python 3 + SQLite
+                </div>
+                <div class="badge">
+                    <span>⚡</span> Lightning fast
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span id="visitor-count">
+                        <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fvishukamble.github.io%2Fhop2&count_bg=%2300FF88&title_bg=%231A1A1A&icon=&icon_color=%23E7E7E7&title=visitors&edge_flat=false" alt="Visitors" />
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span id="current-time"></span>
+                </div>
+            </div>
+        </header>
+
+        <section class="section">
+            <h2>What is hop2?</h2>
+            <p>Ever been 6 folders deep and need to jump somewhere else? Tired of typing long commands over and over?</p>
+
+            <div class="terminal">
+                <pre><span class="comment"># Instead of this mess...</span>
+<span class="prompt">$</span> <span class="command">cd ../../../../../other-project/src</span>
+
+<span class="comment"># Just hop!</span>
+<span class="prompt">$</span> <span class="command">hop2 src</span></pre>
+            </div>
+
+            <div class="terminal">
+                <pre><span class="comment"># Instead of typing this every time...</span>
+<span class="prompt">$</span> <span class="command">kubectl delete pod my-app-pod-7b9c5d-xyz</span>
+
+<span class="comment"># Create a shortcut!</span>
+<span class="prompt">$</span> <span class="command">hop2 kdp my-app-pod-7b9c5d-xyz</span></pre>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Features</h2>
+            <div class="feature-grid">
+                <div class="feature">
+                    <h3>📁 Directory Shortcuts</h3>
+                    <p>Jump to any directory from anywhere with simple aliases you create.</p>
+                </div>
+                <div class="feature">
+                    <h3>⚡ Command Aliases</h3>
+                    <p>Create shortcuts for long commands and run them with arguments.</p>
+                </div>
+                <div class="feature">
+                    <h3>🔧 Simple & Fast</h3>
+                    <p>No AI, no fuzzy matching. Just simple aliases that work exactly as you expect.</p>
+                </div>
+                <div class="feature">
+                    <h3>🐚 Shell Integration</h3>
+                    <p>Works seamlessly with bash and zsh. PowerShell support coming soon!</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Installation</h2>
+            <div class="installation-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <p>Install hop2 with one command:</p>
+                        <div class="terminal">
+                            <pre><span class="prompt">$</span> <span class="command">curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh | bash</span></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <p>Add to your shell configuration:</p>
+                        <div class="terminal">
+                            <pre><span class="prompt">$</span> <span class="command">echo 'source ~/.hop2/hop2.sh' >> ~/.bashrc</span>
+<span class="prompt">$</span> <span class="command">source ~/.bashrc</span></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <p>Start hopping!</p>
+                        <div class="terminal">
+                            <pre><span class="prompt">$</span> <span class="command">hop2 add project</span> <span class="comment"># Save current directory</span>
+<span class="prompt">$</span> <span class="command">hop2 project</span>     <span class="comment"># Jump back anytime!</span></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Quick Demo</h2>
+            <div class="terminal">
+                <pre><span class="comment"># Save your most-used directories</span>
+<span class="prompt">$</span> <span class="command">cd ~/work/frontend/src/components</span>
+<span class="prompt">$</span> <span class="command">hop2 add frontend</span>
+<span class="output">✓ Created: frontend → ~/work/frontend/src/components</span>
+
+<span class="prompt">$</span> <span class="command">cd ~/work/backend/api</span>
+<span class="prompt">$</span> <span class="command">hop2 add backend</span>
+<span class="output">✓ Created: backend → ~/work/backend/api</span>
+
+<span class="comment"># Now jump between them instantly!</span>
+<span class="prompt">$</span> <span class="command">hop2 frontend</span>  <span class="comment"># You're in frontend!</span>
+<span class="prompt">$</span> <span class="command">hop2 backend</span>   <span class="comment"># You're in backend!</span>
+
+<span class="comment"># Create command shortcuts</span>
+<span class="prompt">$</span> <span class="command">hop2 cmd dc "docker-compose"</span>
+<span class="prompt">$</span> <span class="command">hop2 cmd gs "git status"</span>
+
+<span class="comment"># Use them anywhere</span>
+<span class="prompt">$</span> <span class="command">hop2 dc up -d</span>
+<span class="prompt">$</span> <span class="command">hop2 gs</span></pre>
+            </div>
+        </section>
+
+        <section class="section contribute-section">
+            <h2>🤝 Open Source & Community Driven</h2>
+            <div class="contribute-grid">
+                <div class="contribute-card">
+                    <h3>💡 Have an idea?</h3>
+                    <p>hop2 is open source and we love suggestions! Whether it's a feature request, bug report, or just feedback - we want to hear it.</p>
+                    <a href="https://github.com/vishukamble/hop2/issues/new" class="contribute-link">Open an issue →</a>
+                </div>
+                <div class="contribute-card">
+                    <h3>🛠️ Want to contribute?</h3>
+                    <p>PRs are welcome! Whether you're fixing a typo, adding a feature, or improving docs - every contribution matters.</p>
+                    <a href="https://github.com/vishukamble/hop2/pulls" class="contribute-link">Create a PR →</a>
+                </div>
+                <div class="contribute-card">
+                    <h3>⭐ Show support</h3>
+                    <p>If hop2 makes your life easier, consider starring the repo. It helps others discover the project!</p>
+                    <a href="https://github.com/vishukamble/hop2" class="contribute-link">Star on GitHub →</a>
+                </div>
+            </div>
+            <div class="contribute-note">
+                <p><strong>Philosophy:</strong> We believe in keeping things simple. No bloat, no unnecessary features. Just tools that make developers' lives easier.</p>
+            </div>
+        </section>
+
+        <div class="cta">
+            <a href="https://github.com/vishukamble/hop2" class="button">View on GitHub</a>
+            <a href="https://github.com/vishukamble/hop2/issues/new?title=Feature%20Request:%20&body=I%20have%20an%20idea..." class="button button-outline">Suggest a Feature</a>
+        </div>
+
+        <footer>
+            <p>Made with ❤️ by developers who just want to hop around quickly</p>
+            <p class="footer-links">
+                <a href="https://github.com/vishukamble/hop2">GitHub</a> ·
+                <a href="https://github.com/vishukamble/hop2/issues">Issues</a> ·
+                <a href="https://github.com/vishukamble/hop2/blob/main/LICENSE">MIT License</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Personalized greeting based on time
+        function getGreeting() {
+            const hour = new Date().getHours();
+            const greetings = {
+                morning: ['Good morning', '🌅 Rise and shine', '☕ Morning'],
+                afternoon: ['Good afternoon', '☀️ Hey there', 'Afternoon'],
+                evening: ['Good evening', '🌆 Evening', 'Hey there'],
+                night: ['Good night', '🌙 Night owl', '✨ Late night coding?']
+            };
+
+            let timeOfDay;
+            if (hour >= 5 && hour < 12) timeOfDay = 'morning';
+            else if (hour >= 12 && hour < 17) timeOfDay = 'afternoon';
+            else if (hour >= 17 && hour < 21) timeOfDay = 'evening';
+            else timeOfDay = 'night';
+
+            const greetingList = greetings[timeOfDay];
+            const randomGreeting = greetingList[Math.floor(Math.random() * greetingList.length)];
+
+            return randomGreeting;
+        }
+
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            const options = {
+                weekday: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            };
+            const timeString = now.toLocaleString('en-US', options);
+            document.getElementById('current-time').textContent = timeString;
+        }
+
+        // Initialize greeting and time
+        document.getElementById('greeting').textContent = getGreeting() + ', developer!';
+        updateTime();
+        setInterval(updateTime, 1000);
+
+        // Add some subtle animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        document.querySelectorAll('.section, .feature').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.5s, transform 0.5s';
+            observer.observe(el);
+        });
+
+        // Terminal typing effect for demo
+        const demoTerminal = document.querySelector('.demo .terminal pre');
+        if (demoTerminal) {
+            const originalContent = demoTerminal.innerHTML;
+            demoTerminal.innerHTML = '';
+            demoTerminal.style.minHeight = '400px';
+
+            setTimeout(() => {
+                demoTerminal.innerHTML = originalContent;
+                demoTerminal.classList.add('typing');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
