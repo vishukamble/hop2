@@ -95,3 +95,4 @@ if [ -n "$ZSH_VERSION" ]; then
     }
     compdef _hop2 hop2 h2 h
 fi
+
