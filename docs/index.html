@@ -6,7 +6,7 @@
     <title>hop2 - Quick directory jumping for your terminal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrainsMono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
@@ -293,15 +293,19 @@
         }
 
         @keyframes type {
-            from { width: 0 }
-            to { width: 100% }
+          from { width: 0; }
+          to   { width: 100%; }
+        }
+        @keyframes blink {
+          50% { border-color: transparent; }
         }
 
         .typing {
-            overflow: hidden;
-            white-space: nowrap;
-            border-right: 2px solid var(--accent);
-            animation: type 2s steps(30, end) forwards;
+          overflow: hidden;
+          border-right: 2px solid var(--accent);
+          animation:
+            type 2s steps(30,end) forwards,
+            blink 0.7s step-start 2s infinite;
         }
 
         .contribute-section {
@@ -313,14 +317,34 @@
         }
 
         .contribute-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 0;
+        }
+        @media (max-width: 768px) {
+          .contribute-grid {
+            grid-template-columns: 1fr;
+          }
         }
 
         .contribute-card {
             text-align: center;
+            min-width: 0;
+            /* Force every card to be as tall as the tallest one */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 1.5rem;
+        }
+        /* horizontal divider under first row */
+        .contribute-card:nth-child(1),
+        .contribute-card:nth-child(2) {
+          border-bottom: 1px solid #444;
+        }
+        /* vertical divider after first column */
+        .contribute-card:nth-child(1),
+        .contribute-card:nth-child(3) {
+          border-right: 1px solid #444;
         }
 
         .contribute-card h3 {
@@ -332,18 +356,6 @@
         .contribute-card p {
             margin-bottom: 1rem;
             color: #ccc;
-        }
-
-        .contribute-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-weight: 600;
-            transition: opacity 0.2s;
-        }
-
-        .contribute-link:hover {
-            opacity: 0.8;
-            text-decoration: underline;
         }
 
         .contribute-note {
@@ -428,6 +440,7 @@
                 margin: 1rem 0;
             }
         }
+
     </style>
 </head>
 <body>
@@ -442,7 +455,7 @@
                     <span>✨</span> Zero dependencies
                 </div>
                 <div class="badge">
-                    <span>🐍</span> Python 3 + SQLite
+                    <span>🐍</span> Python 3  SQLite
                 </div>
                 <div class="badge">
                     <span>⚡</span> Lightning fast
@@ -460,7 +473,7 @@
             <p>Ever been 6 folders deep and need to jump somewhere else? Tired of typing long commands over and over?</p>
 
             <div class="terminal">
-                <pre><span class="comment"># Instead of this mess...</span>
+                <pre class="typing"><span class="comment"># Instead of this mess...</span>
 <span class="prompt">$</span> <span class="command">cd ../../../../../other-project/src</span>
 
 <span class="comment"># Just hop!</span>
@@ -470,7 +483,6 @@
             <div class="terminal">
                 <pre><span class="comment"># Instead of typing this every time...</span>
 <span class="prompt">$</span> <span class="command">kubectl delete pod my-app-pod-7b9c5d-xyz</span>
-
 <span class="comment"># Create a shortcut!</span>
 <span class="prompt">$</span> <span class="command">hop2 kdp my-app-pod-7b9c5d-xyz</span></pre>
             </div>
@@ -538,7 +550,8 @@
         <section class="section demo demo-section">
             <h2>Quick Demo</h2>
             <div class="terminal">
-                <pre class="typing"><span class="comment"># Save your most-used directories</span>
+                <pre class="typing">
+<span class="comment"># Save your most-used directories</span>
 <span class="prompt">$</span> <span class="command">cd ~/work/frontend/src/components</span>
 <span class="prompt">$</span> <span class="command">hop2 add frontend</span>
 <span class="output">✓ Created: frontend → ~/work/frontend/src/components</span>
@@ -566,18 +579,24 @@
             <div class="contribute-grid">
                 <div class="contribute-card">
                     <h3>💡 Have an idea?</h3>
-                    <p>hop2 is open source and we love suggestions! Whether it's a feature request, bug report, or just feedback - we want to hear it.</p>
-                    <a href="https://github.com/vishukamble/hop2/issues/new" class="contribute-link">Open an issue →</a>
+                    <p>hop2 is open source and we love suggestions! Whether it's a feature request, bug report, or just feedback—we want to hear it.</p>
+                    <a href="https://github.com/vishukamble/hop2/issues/new" class="button button-outline">Open an issue →</a>
                 </div>
                 <div class="contribute-card">
                     <h3>🛠️ Want to contribute?</h3>
                     <p>PRs are welcome! Whether you're fixing a typo, adding a feature, or improving docs - every contribution matters.</p>
-                    <a href="https://github.com/vishukamble/hop2/pulls" class="contribute-link">Create a PR →</a>
+                    <a href="https://github.com/vishukamble/hop2/pulls" class="button button-outline">Create a PR →</a>
                 </div>
                 <div class="contribute-card">
                     <h3>⭐ Show support</h3>
                     <p>If hop2 makes your life easier, consider starring the repo. It helps others discover the project!</p>
-                    <a href="https://github.com/vishukamble/hop2" class="contribute-link">Star on GitHub →</a>
+                    <a href="https://github.com/vishukamble/hop2" class="button button-outline">Star on GitHub →</a>
+                </div>
+                <div class="contribute-card" id="latest-commit">
+                  <h3>🔄 Latest commit</h3>
+                  <p id="commit-message">Loading latest commit…</p>
+                  <p id="commit-author" style="opacity: .8; font-size: .875rem;"></p>
+                  <a id="commit-link" class="button button-outline" href="#" target="_blank">View on GitHub →</a>
                 </div>
             </div>
             <div class="contribute-note">
@@ -638,7 +657,7 @@
         }
 
         // Initialize greeting and time
-        document.getElementById('greeting').textContent = getGreeting() + ', developer!';
+        document.getElementById('greeting').textContent = getGreeting() +', developer!';
         updateTime();
         setInterval(updateTime, 1000);
 
@@ -664,13 +683,28 @@
         if (demoTerminal) {
             const originalContent = demoTerminal.innerHTML;
             demoTerminal.innerHTML = '';
-            demoTerminal.style.minHeight = '400px';
 
             setTimeout(() => {
                 demoTerminal.innerHTML = originalContent;
                 demoTerminal.classList.add('typing');
             }, 1000);
         }
+        // ————————————
+        // fetch the latest commit from GitHub
+        fetch('https://api.github.com/repos/vishukamble/hop2/commits?per_page=1')
+          .then(res => res.json())
+          .then(data => {
+            const c = data[0];
+            document.getElementById('commit-message').textContent = c.commit.message;
+            // when author.login is null (e.g., author via email only), fall back to commit.author.name
+            const author = c.author?.login || c.commit.author.name;
+            document.getElementById('commit-author').textContent = `— ${author}`;
+            document.getElementById('commit-link').href = c.html_url;
+          })
+          .catch(() => {
+            document.getElementById('commit-message').textContent = 'Could not load commit';
+          });
+
     </script>
 </body>
 </html>
