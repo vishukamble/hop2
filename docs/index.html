@@ -114,19 +114,17 @@
         }
 
         .terminal::before {
-            content: '';
-            position: absolute;
-            top: 0.75rem;
-            left: 1rem;
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .terminal::before {
-            content: '● ● ●';
-            color: #666;
-            font-size: 0.75rem;
-            letter-spacing: 0.3rem;
+          content: '';
+          position: absolute;
+          top: 0.75rem;
+          left: 1rem;
+          width: 0.75rem;
+          height: 0.75rem;
+          border-radius: 50%;
+          background: #ff5f57;                     /* red “close” */
+          box-shadow:
+            1.2rem 0 0 0 #ffbd2e,                  /* yellow “minimize” */
+            2.4rem 0 0 0 #28c93f;                  /* green “zoom” */
         }
 
         .terminal pre {
@@ -203,7 +201,7 @@
             border: 1px solid var(--border);
             border-radius: 0.5rem;
             padding: 2rem;
-            max-width: 770px;
+            max-width: max-content;
             margin: 2rem 0;
         }
 
