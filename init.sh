@@ -1,7 +1,7 @@
 #!/bin/bash
 # hop2 shell integration
 # Add this to your ~/.bashrc or ~/.zshrc:
-#   source ~/.hop2/hop2.sh
+#   source ~/.hop2/init.sh
 
 # Main hop2 function that handles directory changes and command shortcuts
 hop2() {

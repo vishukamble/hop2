@@ -56,7 +56,7 @@ hop2 kdp my-pod-name
 curl -sL [https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh](https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh) | bash
 
 # 2. Enable shell integration
-echo 'source ~/.hop2/hop2.sh' >> ~/.bashrc   # or ~/.zshrc
+echo 'source ~/.hop2/init.sh' >> ~/.bashrc   # or ~/.zshrc
 source ~/.bashrc
 ```
 
