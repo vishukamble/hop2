@@ -212,15 +212,20 @@ def run_command(alias, extra_args=None):
 
 
 def update_me(_=None):
-    data = urllib.request.urlopen(
-        'https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh'
-    ).read()
-    with tempfile.NamedTemporaryFile('wb', delete=False) as f:
-        f.write(data)
-        tmp = f.name
-    subprocess.run(['bash', tmp])
-    os.unlink(tmp)
-    return 0
+    print("Updating hop2...")
+    try:
+        data = urllib.request.urlopen(
+            'https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh'
+        ).read()
+        with tempfile.NamedTemporaryFile('wb', delete=False) as f:
+            f.write(data)
+            tmp = f.name
+        subprocess.run(['bash', tmp])
+        os.unlink(tmp)
+        return 0
+    except Exception as e:
+        print(f"✗ Update failed: {e}")
+        return 1
 
 
 def uninstall_me(_=None):
