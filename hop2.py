@@ -303,7 +303,7 @@ def main():
     p = sp.add_parser('uninstall-me', help=argparse.SUPPRESS)
     p.set_defaults(func=uninstall_me)
 
-    args = parser.parse_args()
+    args, rest = parser.parse_known_args()
     init_db()
 
     # fallback: run or cd shortcut
