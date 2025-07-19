@@ -1,12 +1,12 @@
 #!/bin/bash
 # hop2 shell integration
 # Add this to your ~/.bashrc or ~/.zshrc:
-# source /path/to/hop2.sh
+#   source ~/.hop2/hop2.sh
 
-# Main hop2 function that handles directory changes
+# Main hop2 function that handles directory changes and command shortcuts
 hop2() {
-    if [ "$1" = "go" ] || [ "$1" = "" ]; then
-        # If using 'go' command or just an alias, we need to cd
+    if [ "$1" = "go" ] || [ -z "$1" ]; then
+        # Use `go` or empty first arg to trigger cd logic
         local output
         output=$(command hop2 "$@" 2>&1)
 
@@ -15,19 +15,19 @@ hop2() {
             local path="${output#__HOP2_CD:}"
             cd "$path" || return 1
         else
-            # Not a cd command, just print output
+            # Not a cd marker, just print whatever hop2.py printed
             echo "$output"
         fi
     else
-        # For all other commands, run hop2 normally
+        # Delegate everything else straight through
         command hop2 "$@"
     fi
 }
 
-# Shorter alias
+# Shorter alias for hop2
 alias h2="hop2"
 
-# Even shorter function for jumping to directories
+# Even shorter function for jumping to directories: "h <alias>"
 h() {
     if [ -z "$1" ]; then
         hop2 list
@@ -41,36 +41,36 @@ _hop2_completion() {
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local cmd="${COMP_WORDS[1]}"
 
-    # Get all aliases from database
-    local aliases=$(sqlite3 ~/.hop2/hop2.db "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null | tr '\n' ' ')
+    # Gather all available aliases
+    local aliases
+    aliases=$(sqlite3 ~/.hop2/hop2.db \
+        "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null | tr '\n' ' ')
 
     case "$cmd" in
         rm|go)
             COMPREPLY=($(compgen -W "$aliases" -- "$cur"))
             ;;
         "")
-            # First argument - could be a command or an alias
+            # First argument: can be any subcommand or alias
             local commands="add cmd list rm go"
             COMPREPLY=($(compgen -W "$commands $aliases" -- "$cur"))
             ;;
     esac
 }
 
-# Enable completion for bash
 if [ -n "$BASH_VERSION" ]; then
     complete -F _hop2_completion hop2
     complete -F _hop2_completion h2
     complete -F _hop2_completion h
 fi
 
-# ZSH completion (basic)
+# Zsh completion
 if [ -n "$ZSH_VERSION" ]; then
     _hop2() {
-        local -a aliases
-        aliases=(${(f)"$(sqlite3 ~/.hop2/hop2.db "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null)"})
-        _arguments "1:command:(add cmd list rm go $aliases)"
+        local -a all_aliases
+        all_aliases=(${(f)"$(sqlite3 ~/.hop2/hop2.db \
+            "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null)"})
+        _arguments "1:command:(add cmd list rm go $all_aliases)"
     }
-    compdef _hop2 hop2
-    compdef _hop2 h2
-    compdef _hop2 h
+    compdef _hop2 hop2 h2 h
 fi
