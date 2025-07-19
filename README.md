@@ -29,13 +29,13 @@ Quick directory jumping and command aliasing for your terminal. Like `z` or `aut
 
 Ever been 6 folders deep and need to jump somewhere else? Or tired of typing long commands over and over?
 
-\`\`\`bash
+```bash
 # Instead of: cd ../../../../../other-project/src
 hop2 src
 
 # Instead of: kubectl delete pod my-pod-name
 hop2 kdp my-pod-name
-\`\`\`
+```
 
 ---
 
@@ -51,14 +51,14 @@ hop2 kdp my-pod-name
 
 ## Installation
 
-\`\`\`bash
+```bash
 # 1. Install hop2
 curl -sL [https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh](https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh) | bash
 
 # 2. Enable shell integration
 echo 'source ~/.hop2/hop2.sh' >> ~/.bashrc   # or ~/.zshrc
 source ~/.bashrc
-\`\`\`
+```
 
 ---
 
@@ -66,7 +66,7 @@ source ~/.bashrc
 
 ### Directory Shortcuts
 
-\`\`\`bash
+```bash
 # Add current directory with an alias
 hop2 add project
 
@@ -80,11 +80,11 @@ h project
 
 # List all shortcuts
 hop2 list
-\`\`\`
+```
 
 ### Command Shortcuts
 
-\`\`\`bash
+```bash
 # Create a command alias
 hop2 cmd kdp "kubectl delete pod"
 hop2 cmd gs "git status"
@@ -94,13 +94,13 @@ hop2 cmd build "npm run build && npm test"
 hop2 kdp my-pod-name
 hop2 gs
 hop2 build
-\`\`\`
+```
 
 ---
 
 ## Real-world Examples
 
-\`\`\`bash
+```bash
 # Save your most-used workspaces
 cd ~/work/frontend/src/components
 hop2 add frontend
@@ -124,7 +124,7 @@ hop2 cmd tf "terraform"
 hop2 dc up -d
 hop2 k get pods
 hop2 tf plan
-\`\`\`
+```
 
 ---
 
@@ -138,10 +138,10 @@ hop2 tf plan
 
 ## PowerShell Support (Coming Soon)
 
-\`\`\`powershell
+```powershell
 # In your PowerShell profile:
 # Add support so that `hop2 project` does the same cd behavior.
-\`\`\`
+```
 
 ---
 
@@ -168,4 +168,3 @@ This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for d
 ---
 
 Because sometimes you just want to `hop2` where you’re going.
-```
