@@ -14,7 +14,58 @@ from pathlib import Path
 # Config
 DB_PATH = os.path.expanduser("~/.hop2/hop2.db")
 DB_DIR = os.path.dirname(DB_PATH)
+RESERVED_ALIASES = ['add', 'cmd', 'list', 'rm', 'go', 'update-me', 'uninstall-me', 'help', '--help', '-h']
 
+# Update and Uninstall code
+
+def update_hop2():
+    """Self-update hop2"""
+    print("Updating hop2...")
+    try:
+        # Download and run the installer
+        import urllib.request
+        installer = urllib.request.urlopen('https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh').read()
+
+        # Write to temp file and execute
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
+            f.write(installer.decode())
+            temp_path = f.name
+
+        subprocess.run(['bash', temp_path])
+        os.unlink(temp_path)
+        print("✓ hop2 updated! Please run: source ~/.hop2/init.sh")
+    except Exception as e:
+        print(f"✗ Update failed: {e}")
+
+
+def uninstall_hop2():
+    """Self-uninstall hop2"""
+    print("Are you sure you want to uninstall hop2? (y/N): ", end='')
+    if input().lower() != 'y':
+        print("Cancelled.")
+        return
+
+    print("Uninstalling hop2...")
+
+    # Remove from PATH locations
+    for dir in ['/usr/local/bin', os.path.expanduser('~/.local/bin'), os.path.expanduser('~/bin')]:
+        hop2_path = os.path.join(dir, 'hop2')
+        if os.path.exists(hop2_path):
+            try:
+                os.remove(hop2_path)
+                print(f"✓ Removed {hop2_path}")
+            except:
+                print(f"✗ Could not remove {hop2_path} (try with sudo?)")
+
+    # Remove hop2 directory
+    import shutil
+    shutil.rmtree(os.path.expanduser('~/.hop2'), ignore_errors=True)
+    print("✓ Removed ~/.hop2")
+
+    print("\nTo complete uninstall, remove this line from ~/.bashrc or ~/.zshrc:")
+    print("    source ~/.hop2/init.sh")
+    print("\nThen restart your shell.")
 
 def init_db():
     """Initialize the database"""
@@ -42,6 +93,9 @@ def init_db():
 
 def add_directory(alias, path=None):
     """Add a directory shortcut"""
+    if alias in RESERVED_ALIASES:
+        print(f"✗ '{alias}' is a reserved word and cannot be used as an alias")
+        return
     if path is None:
         path = os.getcwd()
     else:
@@ -70,6 +124,9 @@ def add_directory(alias, path=None):
 
 def add_command(alias, command):
     """Add a command shortcut"""
+    if alias in RESERVED_ALIASES:
+        print(f"✗ '{alias}' is a reserved word and cannot be used as an alias")
+        return
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 
@@ -204,6 +261,8 @@ def run_command(alias, extra_args=None):
 def main():
     parser = argparse.ArgumentParser(description='hop2 - Quick directory and command shortcuts')
     subparsers = parser.add_subparsers(dest='command', help='Commands')
+    subparsers.add_parser('update-me', help='Update hop2 to the latest version')
+    subparsers.add_parser('uninstall-me', help='Uninstall hop2')
 
     # Add directory
     add_parser = subparsers.add_parser('add', help='Add directory shortcut (current dir by default)')
@@ -246,6 +305,10 @@ def main():
         if not generate_cd_command(args.alias):
             print(f"✗ No directory shortcut: {args.alias}")
             sys.exit(1)
+    elif args.command == 'update-me':
+        update_hop2()
+    elif args.command == 'uninstall-me':
+        uninstall_hop2()
     elif args.command is None and len(sys.argv) > 1:  # Added check for None
         # Try to run as shortcut
         alias = sys.argv[1]
