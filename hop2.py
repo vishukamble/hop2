@@ -18,12 +18,30 @@ import shutil
 DB_PATH = os.path.expanduser("~/.hop2/hop2.db")
 DB_DIR = os.path.dirname(DB_PATH)
 
-# ‹change›: Reserved words you cannot override
+# Reserved words
 RESERVED_ALIASES = [
     'add', 'cmd', 'list', 'rm', 'go',
     'update-me', 'uninstall-me',
     'help', '--help', '-h'
 ]
+
+def print_help():
+    """Custom table-formatted help"""
+    print("Usage: hop2 <command> [args]\n")
+    print(f"{'Command':<15} What it does")
+    print("-" * 50)
+    for cmd, desc in [
+        ("update-me",    "Update hop2 to the latest version"),
+        ("uninstall-me", "Uninstall hop2"),
+        ("add",          "Add directory shortcut (current dir by default)"),
+        ("cmd",          "Add command shortcut"),
+        ("list",         "List all shortcuts"),
+        ("rm",           "Remove a shortcut"),
+        ("go",           "(internal)")
+    ]:
+        print(f"{cmd:<15} {desc}")
+    print()
+    sys.exit(0)
 
 
 @contextmanager
@@ -57,7 +75,7 @@ def init_db():
 
 def add_directory(alias, path=None):
     """Add a directory shortcut"""
-    if alias in RESERVED_ALIASES:                                  # ‹change›
+    if alias in RESERVED_ALIASES:
         print(f"✗ '{alias}' is reserved and cannot be used")
         return 1
 
@@ -89,11 +107,11 @@ def add_directory(alias, path=None):
 
 def add_command(alias, cmd_parts):
     """Add a command shortcut"""
-    if alias in RESERVED_ALIASES:                                  # ‹change›
+    if alias in RESERVED_ALIASES:
         print(f"✗ '{alias}' is reserved and cannot be used")
         return 1
 
-    command = ' '.join(cmd_parts)                                  # ‹change›
+    command = ' '.join(cmd_parts)
     created = datetime.now(timezone.utc).isoformat()
     with get_conn() as conn:
         c = conn.cursor()
@@ -112,7 +130,6 @@ def add_command(alias, cmd_parts):
 
 
 def get_directory(alias):
-    """Get the directory path for an alias"""
     with sqlite3.connect(DB_PATH) as conn:
         c = conn.cursor()
         c.execute("SELECT path FROM directories WHERE alias = ?", (alias,))
@@ -124,7 +141,6 @@ def get_directory(alias):
 
 
 def get_command(alias):
-    """Get command for an alias"""
     with sqlite3.connect(DB_PATH) as conn:
         c = conn.cursor()
         c.execute("SELECT command FROM commands WHERE alias = ?", (alias,))
@@ -136,7 +152,6 @@ def get_command(alias):
 
 
 def list_all(_=None):
-    """List all shortcuts"""
     with sqlite3.connect(DB_PATH) as conn:
         c = conn.cursor()
         c.execute("SELECT alias, path, uses FROM directories ORDER BY uses DESC, alias")
@@ -163,7 +178,6 @@ def list_all(_=None):
 
 
 def remove_shortcut(alias):
-    """Remove a shortcut"""
     with get_conn() as conn:
         c = conn.cursor()
         c.execute("DELETE FROM directories WHERE alias = ?", (alias,))
@@ -180,7 +194,6 @@ def remove_shortcut(alias):
 
 
 def generate_cd_command(alias):
-    """Generate cd command for shell integration"""
     path = get_directory(alias)
     if path:
         print(f"__HOP2_CD:{path}")
@@ -189,7 +202,6 @@ def generate_cd_command(alias):
 
 
 def run_command(alias, extra_args=None):
-    """Run a command shortcut"""
     cmd = get_command(alias)
     if cmd:
         full = f"{cmd} {' '.join(extra_args)}" if extra_args else cmd
@@ -199,9 +211,7 @@ def run_command(alias, extra_args=None):
     return False
 
 
-def update_me(_=None):                                              # ‹change›
-    """Self-update hop2"""
-    print("Updating hop2…")
+def update_me(_=None):
     data = urllib.request.urlopen(
         'https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh'
     ).read()
@@ -213,8 +223,7 @@ def update_me(_=None):                                              # ‹change�
     return 0
 
 
-def uninstall_me(_=None):                                           # ‹change›
-    """Self-uninstall hop2"""
+def uninstall_me(_=None):
     ans = input("Are you sure you want to uninstall hop2? (y/N): ").lower()
     if ans != 'y':
         print("Cancelled.")
@@ -232,51 +241,45 @@ def uninstall_me(_=None):                                           # ‹change�
 
 
 def main():
-    parser = argparse.ArgumentParser(description='hop2 - Quick directory and command shortcuts')
+    # if no args or help flag, show our custom help
+    if len(sys.argv) == 1 or sys.argv[1] in ('-h', '--help'):
+        print_help()
+
+    parser = argparse.ArgumentParser(add_help=False)
     sp = parser.add_subparsers(dest='command')
 
-    # add
-    p_add = sp.add_parser('add', help='Add directory shortcut')
-    p_add.add_argument('alias')
-    p_add.add_argument('path', nargs='?')
-    p_add.set_defaults(func=lambda args: add_directory(args.alias, args.path))
+    p = sp.add_parser('add', help=argparse.SUPPRESS)
+    p.add_argument('alias')
+    p.add_argument('path', nargs='?')
+    p.set_defaults(func=lambda a: add_directory(a.alias, a.path))
 
-    # cmd ‹change›
-    p_cmd = sp.add_parser('cmd', help='Add command shortcut')
-    p_cmd.add_argument('alias')
-    p_cmd.add_argument('cmd', nargs='+', help='Command to run')
-    p_cmd.set_defaults(func=lambda args: add_command(args.alias, args.cmd))
+    p = sp.add_parser('cmd', help=argparse.SUPPRESS)
+    p.add_argument('alias')
+    p.add_argument('cmd', nargs='+')
+    p.set_defaults(func=lambda a: add_command(a.alias, a.cmd))
 
-    # list
-    p_list = sp.add_parser('list', help='List all shortcuts')
-    p_list.set_defaults(func=list_all)
+    p = sp.add_parser('list', help=argparse.SUPPRESS)
+    p.set_defaults(func=list_all)
 
-    # rm
-    p_rm = sp.add_parser('rm', help='Remove a shortcut')
-    p_rm.add_argument('alias')
-    p_rm.set_defaults(func=lambda args: remove_shortcut(args.alias))
+    p = sp.add_parser('rm', help=argparse.SUPPRESS)
+    p.add_argument('alias')
+    p.set_defaults(func=lambda a: remove_shortcut(a.alias))
 
-    # go (internal)
-    p_go = sp.add_parser('go', help=argparse.SUPPRESS)
-    p_go.add_argument('alias')
-    p_go.set_defaults(func=lambda args: (generate_cd_command(args.alias) or sys.exit(1)))
+    p = sp.add_parser('go', help=argparse.SUPPRESS)
+    p.add_argument('alias')
+    p.set_defaults(func=lambda a: (generate_cd_command(a.alias) or sys.exit(1)))
 
-    # update-me ‹change›
-    p_up = sp.add_parser('update-me', help='Self-update hop2')
-    p_up.set_defaults(func=update_me)
+    p = sp.add_parser('update-me', help=argparse.SUPPRESS)
+    p.set_defaults(func=update_me)
 
-    # uninstall-me ‹change›
-    p_un = sp.add_parser('uninstall-me', help='Self-uninstall hop2')
-    p_un.set_defaults(func=uninstall_me)
-
-    # default
-    parser.set_defaults(func=lambda args: parser.print_help())
+    p = sp.add_parser('uninstall-me', help=argparse.SUPPRESS)
+    p.set_defaults(func=uninstall_me)
 
     args = parser.parse_args()
     init_db()
 
-    # bare alias fallback
-    if args.command is None and len(sys.argv) > 1:
+    # fallback: run or cd shortcut
+    if args.command is None:
         alias = sys.argv[1]
         if run_command(alias, sys.argv[2:]):
             sys.exit(0)
@@ -285,7 +288,6 @@ def main():
         print(f"✗ No shortcut found: {alias}")
         sys.exit(1)
 
-    # dispatch
     code = args.func(args)
     sys.exit(code if isinstance(code, int) else 0)
 
