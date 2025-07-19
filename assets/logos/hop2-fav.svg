@@ -1,0 +1,30 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- (Optional) background circle -->
+  <!-- <circle cx="256" cy="256" r="240" fill="#0a0a0a"/> -->
+
+  <!-- Prompt dollar, right above second hop -->
+  <text x="280" y="300"
+        text-anchor="middle"
+        font-family="JetBrains Mono, Consolas, monospace"
+        font-size="120"
+        font-weight="bold"
+        fill="#00ff88">
+    $
+  </text>
+
+  <!-- Hopping arc visualization -->
+  <g>
+    <!-- First hop -->
+    <circle cx="180" cy="350" r="8" fill="#00ff88" opacity="0.3"/>
+    <path d="M 180 350 Q 230 300, 280 350"
+          stroke="#00ff88" stroke-width="6" fill="none" opacity="0.6"/>
+
+    <!-- Second hop -->
+    <circle cx="280" cy="350" r="8" fill="#00ff88" opacity="0.5"/>
+    <path d="M 280 350 Q 330 300, 380 350"
+          stroke="#00ff88" stroke-width="6" fill="none" opacity="0.8"/>
+
+    <!-- Final dot -->
+    <circle cx="380" cy="350" r="10" fill="#00ff88"/>
+  </g>
+</svg>
