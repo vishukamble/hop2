@@ -5,9 +5,15 @@
 
 # Main hop2 function that handles directory changes and command shortcuts
 hop2() {
-    # Check if we're trying to use a shortcut directly
-    if [ "$#" -eq 1 ] && [ "$1" != "add" ] && [ "$1" != "cmd" ] && [ "$1" != "list" ] && [ "$1" != "rm" ] && [ "$1" != "go" ] && [ "$1" != "--help" ] && [ "$1" != "-h" ]; then
-        # Try to use it as a directory shortcut
+    # For known commands, pass through directly
+    if [ "$1" = "add" ] || [ "$1" = "cmd" ] || [ "$1" = "list" ] || [ "$1" = "ls" ] || [ "$1" = "rm" ] || [ "$1" = "update-me" ] || [ "$1" = "uninstall-me" ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+        command hop2 "$@"
+        return
+    fi
+
+    # For single arg that's not a known command, try as shortcut
+    if [ "$#" -eq 1 ]; then
+        # Try to use it as a directory shortcut first
         local output
         output=$(command hop2 go "$1" 2>&1)
 
@@ -16,7 +22,7 @@ hop2() {
             local path="${output#__HOP2_CD:}"
             cd "$path" || return 1
         else
-            # Not a directory, maybe it's a command - run it directly
+            # Not a directory, try as command
             command hop2 "$@"
         fi
     elif [ "$1" = "go" ]; then
@@ -31,7 +37,7 @@ hop2() {
             echo "$output"
         fi
     else
-        # All other commands pass through
+        # Multi-arg shortcuts (like 'hop2 gs arg1 arg2')
         command hop2 "$@"
     fi
 }
@@ -47,33 +53,32 @@ h() {
         hop2 go "$1"
     fi
 }
-# Bash completion
+
+# Bash completion with ALL commands
 _hop2_completion() {
     local cur="${COMP_WORDS[COMP_CWORD]}"
-    local cmd="${COMP_WORDS[1]}"
+    local prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    # Gather all available aliases
-    local aliases
-    aliases=$(sqlite3 ~/.hop2/hop2.db \
-        "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null | tr '\n' ' ')
+    # Main command completion
+    if [ "$COMP_CWORD" -eq 1 ]; then
+        local commands="add cmd list ls rm update-me uninstall-me"
+        local aliases
+        aliases=$(sqlite3 ~/.hop2/hop2.db \
+            "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null | tr '\n' ' ')
+        COMPREPLY=($(compgen -W "$commands $aliases" -- "$cur"))
+        return
+    fi
 
-    case "$cmd" in
+    # Subcommand specific completion
+    case "$prev" in
         rm|go)
+            local aliases
+            aliases=$(sqlite3 ~/.hop2/hop2.db \
+                "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null | tr '\n' ' ')
             COMPREPLY=($(compgen -W "$aliases" -- "$cur"))
-            ;;
-        "")
-            # First argument: can be any subcommand or alias
-            local commands="add cmd list rm go"
-            COMPREPLY=($(compgen -W "$commands $aliases" -- "$cur"))
             ;;
     esac
 }
-
-if [ -n "$BASH_VERSION" ]; then
-    complete -F _hop2_completion hop2
-    complete -F _hop2_completion h2
-    complete -F _hop2_completion h
-fi
 
 if [ -n "$BASH_VERSION" ]; then
     complete -F _hop2_completion hop2
@@ -85,9 +90,8 @@ fi
 if [ -n "$ZSH_VERSION" ]; then
     _hop2() {
         local -a all_aliases
-        # shellcheck disable=SC2296
         all_aliases=(${(f)"$(sqlite3 ~/.hop2/hop2.db 'SELECT alias FROM directories UNION SELECT alias FROM commands' 2>/dev/null)"})
-        _arguments "1:command:(add cmd list rm go $all_aliases)"
+        _arguments "1:command:(add cmd list ls rm update-me uninstall-me $all_aliases)"
     }
     compdef _hop2 hop2 h2 h
 fi
