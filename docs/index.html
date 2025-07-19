@@ -624,6 +624,25 @@
         </footer>
     </div>
 <script>
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const msgEl    = document.getElementById('commit-message');
+    const authEl   = document.getElementById('commit-author');
+    const linkEl   = document.getElementById('commit-link');
+
+    fetch('https://api.github.com/repos/vishukamble/hop2/commits?per_page=1')
+      .then(res => res.json())
+      .then(data => {
+        const c = data[0].commit;
+        msgEl.textContent = c.message;
+        authEl.textContent = `— ${data[0].author?.login || c.author.name}`;
+        linkEl.href       = data[0].html_url;
+      })
+      .catch(() => {
+        msgEl.textContent = 'Could not load commit';
+      });
+  });
+
   // Personalized greeting based on time
   function getGreeting() {
     const hour = new Date().getHours();
