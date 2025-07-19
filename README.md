@@ -1,27 +1,28 @@
+```bash
 ![hop2](assets/logos/hop2-logo-wide.svg)
 
 # hop2 🚀
 
 Quick directory jumping and command aliasing for your terminal. Like `z` or `autojump`, but simpler.
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)  
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/vishukamble/hop2/ci.yml?branch=main&label=build&logo=github)](https://github.com/vishukamble/hop2/actions)
 
 ---
 
 ## Table of Contents
 
-- [Why hop2?](#why-hop2)  
-- [Features](#features)  
-- [Installation](#installation)  
-- [Usage](#usage)  
-  - [Directory Shortcuts](#directory-shortcuts)  
-  - [Command Shortcuts](#command-shortcuts)  
-- [Real-world Examples](#real-world-examples)  
-- [Tips & Gotchas](#tips--gotchas)  
-- [PowerShell Support (Coming Soon)](#powershell-support-coming-soon)  
-- [Contributing](#contributing)  
-- [License](#license)  
+- [Why hop2?](#why-hop2)
+- [Features](#features)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Directory Shortcuts](#directory-shortcuts)
+  - [Command Shortcuts](#command-shortcuts)
+- [Real-world Examples](#real-world-examples)
+- [Tips & Gotchas](#tips--gotchas)
+- [PowerShell Support (Coming Soon)](#powershell-support-coming-soon)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -41,11 +42,11 @@ hop2 kdp my-pod-name
 
 ## Features
 
-- **Directory shortcuts**: Jump to any directory from anywhere  
-- **Command aliases**: Create shortcuts for long commands  
-- **Zero dependencies**: Just Python 3 and SQLite  
-- **Shell integration**: Works with bash & zsh (PowerShell coming soon)  
-- **Simple**: No AI, no fuzzy matching—just aliases you control  
+- **Directory shortcuts**: Jump to any directory from anywhere
+- **Command aliases**: Create shortcuts for long commands
+- **Zero dependencies**: Just Python 3 and SQLite
+- **Shell integration**: Works with bash & zsh (PowerShell coming soon)
+- **Simple**: No AI, no fuzzy matching—just aliases you control
 
 ---
 
@@ -53,7 +54,7 @@ hop2 kdp my-pod-name
 
 \`\`\`bash
 # 1. Install hop2
-curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh | bash
+curl -sL [https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh](https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh) | bash
 
 # 2. Enable shell integration
 echo 'source ~/.hop2/hop2.sh' >> ~/.bashrc   # or ~/.zshrc
@@ -105,7 +106,7 @@ hop2 build
 cd ~/work/frontend/src/components
 hop2 add frontend
 
-cd ~/work/backend/api/handlers  
+cd ~/work/backend/api/handlers
 hop2 add backend
 
 cd ~/work/infrastructure/kubernetes
@@ -130,9 +131,9 @@ hop2 tf plan
 
 ## Tips & Gotchas
 
-- **Unique aliases**: Directory and command aliases share the same namespace.  
-- **Backup & restore**: Your shortcuts live in \`~/.hop2/hop2.db\`. Back it up to migrate.  
-- **Security**: Command aliases run exactly what you type—avoid untrusted inputs.  
+- **Unique aliases**: Directory and command aliases share the same namespace.
+- **Backup & restore**: Your shortcuts live in `~/.hop2/hop2.db`. Back it up to migrate.
+- **Security**: Command aliases run exactly what you type—avoid untrusted inputs.
 
 ---
 
@@ -149,15 +150,15 @@ hop2 tf plan
 
 We love PRs! Good first issues:
 
-- Bug fixes & docs improvements  
-- PowerShell integration  
-- Enhanced shell completions  
+- Bug fixes & docs improvements
+- PowerShell integration
+- Enhanced shell completions
 
 Please avoid:
 
-- External dependencies  
-- Fuzzy-matching features (other tools excel at that)  
-- Over-engineering the core simplicity  
+- External dependencies
+- Fuzzy-matching features (other tools excel at that)
+- Over-engineering the core simplicity
 
 ---
 
@@ -167,5 +168,5 @@ This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for d
 
 ---
 
-Because sometimes you just want to \`hop2\` where you’re going.
-EOF
+Because sometimes you just want to `hop2` where you’re going.
+```
