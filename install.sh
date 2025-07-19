@@ -1,5 +1,7 @@
 #!/bin/bash
-# hop2 installer script
+# hop2 shell integration
+# Add this to your ~/.bashrc or ~/.zshrc:
+#   source ~/.hop2/init.sh
 
 set -e
 
@@ -26,13 +28,13 @@ fi
 mkdir -p "$HOME/.hop2"
 
 echo "Downloading hop2 core..."
-# Download hop2.py
+# Download hop2.py and init.sh (renamed from init.sh)
 if command -v curl &> /dev/null; then
     curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/hop2.py -o /tmp/hop2
-    curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/hop2.sh -o "$HOME/.hop2/hop2.sh"
+    curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/init.sh -o "$HOME/.hop2/init.sh"
 elif command -v wget &> /dev/null; then
     wget -q https://raw.githubusercontent.com/vishukamble/hop2/main/hop2.py -O /tmp/hop2
-    wget -q https://raw.githubusercontent.com/vishukamble/hop2/main/hop2.sh -O "$HOME/.hop2/hop2.sh"
+    wget -q https://raw.githubusercontent.com/vishukamble/hop2/main/init.sh -O "$HOME/.hop2/init.sh"
 else
     echo "Error: curl or wget is required for installation."
     exit 1
@@ -43,7 +45,7 @@ chmod +x /tmp/hop2
 mv /tmp/hop2 "$INSTALL_DIR/hop2"
 
 # Make the shell integration script executable
-chmod +x "$HOME/.hop2/hop2.sh"
+chmod +x "$HOME/.hop2/init.sh"
 
 echo "✓ hop2 installed successfully to $INSTALL_DIR/hop2"
 echo
@@ -61,9 +63,9 @@ else
 fi
 
 cat <<EOF
-⚠️  To enable directory jumping, add this line to $SHELL_RC:
+To enable directory jumping, add this line to $SHELL_RC:
 
-    source ~/.hop2/hop2.sh
+    source ~/.hop2/init.sh
 
 Then reload your shell:
 

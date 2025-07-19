@@ -1,7 +1,7 @@
 #!/bin/bash
 # hop2 shell integration
 # Add this to your ~/.bashrc or ~/.zshrc:
-#   source ~/.hop2/hop2.sh
+# source ~/.hop2/init.sh
 
 # Main hop2 function that handles directory changes and command shortcuts
 hop2() {
@@ -47,7 +47,6 @@ h() {
         hop2 go "$1"
     fi
 }
-
 # Bash completion
 _hop2_completion() {
     local cur="${COMP_WORDS[COMP_CWORD]}"
@@ -76,12 +75,18 @@ if [ -n "$BASH_VERSION" ]; then
     complete -F _hop2_completion h
 fi
 
+if [ -n "$BASH_VERSION" ]; then
+    complete -F _hop2_completion hop2
+    complete -F _hop2_completion h2
+    complete -F _hop2_completion h
+fi
+
 # Zsh completion
 if [ -n "$ZSH_VERSION" ]; then
     _hop2() {
         local -a all_aliases
-        all_aliases=(${(f)"$(sqlite3 ~/.hop2/hop2.db \
-            "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null)"})
+        # shellcheck disable=SC2296
+        all_aliases=(${(f)"$(sqlite3 ~/.hop2/hop2.db 'SELECT alias FROM directories UNION SELECT alias FROM commands' 2>/dev/null)"})
         _arguments "1:command:(add cmd list rm go $all_aliases)"
     }
     compdef _hop2 hop2 h2 h
