@@ -8,6 +8,7 @@ import sqlite3
 import subprocess
 import argparse
 from datetime import datetime
+from contextlib import contextmanager
 from pathlib import Path
 
 # Config
