@@ -27,9 +27,9 @@ def get_conn():
         conn.close()
 
 def init_db():
-    """Initialize the database tables if they don’t exist."""
+    """Initialize the database"""
     os.makedirs(DB_DIR, exist_ok=True)
-    with sqlite3.connect(DB_PATH) as conn:
+    with get_conn() as conn:
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS directories
                      (alias TEXT PRIMARY KEY,
@@ -43,13 +43,13 @@ def init_db():
                       uses INTEGER DEFAULT 0)''')
 
 def add_directory(alias, path=None):
-    """Add or update a directory shortcut."""
+    """Add a directory shortcut"""
     if path is None:
         path = os.getcwd()
     else:
         path = os.path.abspath(os.path.expanduser(path))
-    if not os.path.isdir(path):
-        print(f"✗ Path does not exist: {path}", file=sys.stderr)
+    if not os.path.exists(path):
+        print(f"✗ Path does not exist: {path}")
         return 1
 
     created = datetime.now(timezone.utc).isoformat()
@@ -57,41 +57,53 @@ def add_directory(alias, path=None):
         c = conn.cursor()
         try:
             c.execute(
-                "INSERT INTO directories(alias, path, created_at) VALUES (?, ?, ?)",
+                "INSERT INTO directories (alias, path, created_at) VALUES (?, ?, ?)",
                 (alias, path, created)
             )
             print(f"✓ Created: {alias} → {path}")
         except sqlite3.IntegrityError:
-            c.execute(
-                "UPDATE directories SET path = ? WHERE alias = ?",
-                (path, alias)
-            )
+            c.execute("UPDATE directories SET path = ? WHERE alias = ?", (path, alias))
             print(f"✓ Updated: {alias} → {path}")
     return 0
 
-def add_command(alias, cmd):
-    """Add or update a command shortcut."""
-    command_str = " ".join(cmd)
-    created = datetime.now(timezone.utc).isoformat()
+def add_command(alias, command):
+    """Add a command shortcut"""
+    created = datetime.now(timezone.utc).isoformat()  # ← change: store ISO UTC
     with get_conn() as conn:
         c = conn.cursor()
         try:
             c.execute(
-                "INSERT INTO commands(alias, command, created_at) VALUES (?, ?, ?)",
-                (alias, command_str, created)
+                "INSERT INTO commands (alias, command, created_at) VALUES (?, ?, ?)",
+                (alias, command, created)
             )
-            print(f"✓ Created command: {alias} → {command_str}")
+            print(f"✓ Created command: {alias} → {command}")
         except sqlite3.IntegrityError:
-            c.execute(
-                "UPDATE commands SET command = ? WHERE alias = ?",
-                (command_str, alias)
-            )
-            print(f"✓ Updated command: {alias} → {command_str}")
+            c.execute("UPDATE commands SET command = ? WHERE alias = ?", (command, alias))
+            print(f"✓ Updated command: {alias} → {command}")
     return 0
 
-def list_all(_args=None):
-    """List all directory + command shortcuts."""
-    with sqlite3.connect(DB_PATH) as conn:
+def get_directory(alias):
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute("SELECT path FROM directories WHERE alias = ?", (alias,))
+        row = c.fetchone()
+        if row:
+            c.execute("UPDATE directories SET uses = uses + 1 WHERE alias = ?", (alias,))
+            return row["path"]
+    return None
+
+def get_command(alias):
+    with get_conn() as conn:
+        c = conn.cursor()
+        c.execute("SELECT command FROM commands WHERE alias = ?", (alias,))
+        row = c.fetchone()
+        if row:
+            c.execute("UPDATE commands SET uses = uses + 1 WHERE alias = ?", (alias,))
+            return row["command"]
+    return None
+
+def list_all():
+    with get_conn() as conn:
         c = conn.cursor()
         c.execute("SELECT alias, path, uses FROM directories ORDER BY uses DESC, alias")
         dirs = c.fetchall()
@@ -102,8 +114,8 @@ def list_all(_args=None):
         print("\n📁 Directory shortcuts:")
         print("-" * 60)
         for alias, path, uses in dirs:
-            disp = path.replace(os.path.expanduser("~"), "~")
-            print(f"{alias:<15} → {disp:<40} ({uses} uses)")
+            display = path.replace(os.path.expanduser("~"), "~")
+            print(f"{alias:<15} → {display:<40} ({uses} uses)")
     if cmds:
         print("\n⚡ Command shortcuts:")
         print("-" * 60)
@@ -111,13 +123,12 @@ def list_all(_args=None):
             disp = command if len(command) <= 40 else command[:37] + "..."
             print(f"{alias:<15} → {disp:<40} ({uses} uses)")
     if not dirs and not cmds:
-        print("No shortcuts yet!")
+        print("No shortcuts yet! Create one with:")
         print("  hop2 add <alias>           # Add current directory")
         print("  hop2 cmd <alias> <command> # Add command shortcut")
     return 0
 
 def remove_shortcut(alias):
-    """Remove a directory or command shortcut."""
     with get_conn() as conn:
         c = conn.cursor()
         c.execute("DELETE FROM directories WHERE alias = ?", (alias,))
@@ -128,84 +139,72 @@ def remove_shortcut(alias):
         if c.rowcount:
             print(f"✓ Removed command shortcut: {alias}")
             return 0
-
-    print(f"✗ No shortcut found: {alias}", file=sys.stderr)
+    print(f"✗ No shortcut found: {alias}")
     return 1
 
 def generate_cd_command(alias):
-    """Emit a magic marker for the shell wrapper to cd."""
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("SELECT path FROM directories WHERE alias = ?", (alias,))
-        row = c.fetchone()
-        if row:
-            print(f"__HOP2_CD:{row[0]}")
-            with sqlite3.connect(DB_PATH) as conn2:
-                conn2.execute("UPDATE directories SET uses = uses + 1 WHERE alias = ?", (alias,))
-            return True
+    path = get_directory(alias)
+    if path:
+        print(f"__HOP2_CD:{path}")
+        return True
     return False
 
 def run_command(alias, extra):
-    """Run a stored command alias."""
-    with sqlite3.connect(DB_PATH) as conn:
-        c = conn.cursor()
-        c.execute("SELECT command FROM commands WHERE alias = ?", (alias,))
-        row = c.fetchone()
-        if row:
-            full = row[0] + (" " + " ".join(extra) if extra else "")
-            print(f"→ Running: {full}")
-            subprocess.run(full, shell=True)
-            conn.execute("UPDATE commands SET uses = uses + 1 WHERE alias = ?", (alias,))
-            return True
+    cmd = get_command(alias)
+    if cmd:
+        if extra:
+            cmd = f"{cmd} {' '.join(extra)}"
+        print(f"→ Running: {cmd}")
+        subprocess.run(cmd, shell=True)
+        return True
     return False
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="hop2 - Quick directory and command shortcuts"
-    )
-    subs = parser.add_subparsers(dest="command")
+    parser = argparse.ArgumentParser(prog="hop2",
+        description="hop2 - Quick directory and command shortcuts")
+    sub = parser.add_subparsers(dest="command")
 
     # add
-    p = subs.add_parser("add", help="Add directory shortcut")
+    p = sub.add_parser("add", help="Add directory shortcut")
     p.add_argument("alias")
-    p.add_argument("path", nargs="?", default=None)
-    p.set_defaults(func=lambda a: add_directory(a.alias, a.path))
+    p.add_argument("path", nargs="?")
+    p.set_defaults(func=lambda args: add_directory(args.alias, args.path))
 
-    # cmd
-    p = subs.add_parser("cmd", help="Add command shortcut")
-    p.add_argument("alias")
-    p.add_argument("cmd", nargs="+", help="The command to alias")
-    p.set_defaults(func=lambda a: add_command(a.alias, a.cmd))
+    # cmd ← change: use 'command' not 'cmd', wire up func
+    p = sub.add_parser("cmd", help="Add command shortcut")
+    p.add_argument("alias", help="Shortcut name")
+    p.add_argument("command", nargs="+", help="Command to run")
+    p.set_defaults(func=lambda args: add_command(args.alias, " ".join(args.command)))
 
     # list
-    p = subs.add_parser("list", help="List all shortcuts")
-    p.set_defaults(func=list_all)
+    p = sub.add_parser("list", help="List all shortcuts")
+    p.set_defaults(func=lambda args: list_all())
 
     # rm
-    p = subs.add_parser("rm", help="Remove a shortcut")
+    p = sub.add_parser("rm", help="Remove a shortcut")
     p.add_argument("alias")
-    p.set_defaults(func=lambda a: remove_shortcut(a.alias))
+    p.set_defaults(func=lambda args: remove_shortcut(args.alias))
 
-    # internal go
-    p = subs.add_parser("go", help=argparse.SUPPRESS)
+    # go (internal)
+    p = sub.add_parser("go", help=argparse.SUPPRESS)
     p.add_argument("alias")
-    p.set_defaults(func=lambda a: (generate_cd_command(a.alias) or (_ for _ in ()).throw(SystemExit(1))))
+    p.set_defaults(func=lambda args: (generate_cd_command(args.alias) or
+        (print(f"✗ No directory shortcut: {args.alias}"), sys.exit(1))))
 
-    # default if nothing matched
-    parser.set_defaults(func=lambda a: parser.print_help())
+    # default
+    parser.set_defaults(func=lambda args: parser.print_help())
 
-    args = parser.parse_args()
+    args, extras = parser.parse_known_args()
     init_db()
 
-    # if user typed e.g. `hop2 gs ...`
+    # bare alias fallback
     if args.command is None and len(sys.argv) > 1:
         alias = sys.argv[1]
-        rest  = sys.argv[2:]
-        if run_command(alias, rest):
+        if run_command(alias, sys.argv[2:]):
             sys.exit(0)
         if generate_cd_command(alias):
             sys.exit(0)
-        print(f"✗ No shortcut found: {alias}", file=sys.stderr)
+        print(f"✗ No shortcut found: {alias}")
         sys.exit(1)
 
     # dispatch
