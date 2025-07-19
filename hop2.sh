@@ -5,21 +5,33 @@
 
 # Main hop2 function that handles directory changes and command shortcuts
 hop2() {
-    if [ "$1" = "go" ] || [ -z "$1" ]; then
-        # Use `go` or empty first arg to trigger cd logic
+    # Check if we're trying to use a shortcut directly
+    if [ "$#" -eq 1 ] && [ "$1" != "add" ] && [ "$1" != "cmd" ] && [ "$1" != "list" ] && [ "$1" != "rm" ] && [ "$1" != "go" ] && [ "$1" != "--help" ] && [ "$1" != "-h" ]; then
+        # Try to use it as a directory shortcut
         local output
-        output=$(command hop2 "$@" 2>&1)
+        output=$(command hop2 go "$1" 2>&1)
 
         if [[ $output == __HOP2_CD:* ]]; then
             # Extract path and cd to it
             local path="${output#__HOP2_CD:}"
             cd "$path" || return 1
         else
-            # Not a cd marker, just print whatever hop2.py printed
+            # Not a directory, maybe it's a command - run it directly
+            command hop2 "$@"
+        fi
+    elif [ "$1" = "go" ]; then
+        # Explicit go command
+        local output
+        output=$(command hop2 "$@" 2>&1)
+
+        if [[ $output == __HOP2_CD:* ]]; then
+            local path="${output#__HOP2_CD:}"
+            cd "$path" || return 1
+        else
             echo "$output"
         fi
     else
-        # Delegate everything else straight through
+        # All other commands pass through
         command hop2 "$@"
     fi
 }

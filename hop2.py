@@ -24,41 +24,17 @@ def init_db():
 
     # Table for directory shortcuts
     c.execute('''CREATE TABLE IF NOT EXISTS directories
-                 (
-                     alias
-                     TEXT
-                     PRIMARY
-                     KEY,
-                     path
-                     TEXT
-                     NOT
-                     NULL,
-                     created_at
-                     TIMESTAMP,
-                     uses
-                     INTEGER
-                     DEFAULT
-                     0
-                 )''')
+                 (alias TEXT PRIMARY KEY,
+                  path TEXT NOT NULL,
+                  created_at TIMESTAMP,
+                  uses INTEGER DEFAULT 0)''')
 
     # Table for command shortcuts
     c.execute('''CREATE TABLE IF NOT EXISTS commands
-                 (
-                     alias
-                     TEXT
-                     PRIMARY
-                     KEY,
-                     command
-                     TEXT
-                     NOT
-                     NULL,
-                     created_at
-                     TIMESTAMP,
-                     uses
-                     INTEGER
-                     DEFAULT
-                     0
-                 )''')
+                 (alias TEXT PRIMARY KEY,
+                  command TEXT NOT NULL,
+                  created_at TIMESTAMP,
+                  uses INTEGER DEFAULT 0)''')
 
     conn.commit()
     conn.close()
@@ -80,7 +56,7 @@ def add_directory(alias, path=None):
 
     try:
         c.execute("INSERT INTO directories (alias, path, created_at) VALUES (?, ?, ?)",
-                  (alias, path, datetime.now()))
+                  (alias, path, datetime.now().isoformat()))  # Convert to string
         conn.commit()
         print(f"✓ Created: {alias} → {path}")
     except sqlite3.IntegrityError:
@@ -112,7 +88,7 @@ def add_command(alias, command):
 
 
 def get_directory(alias):
-    """Get directory path for an alias"""
+    """Get the directory path for an alias"""
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
 

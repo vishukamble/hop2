@@ -70,10 +70,13 @@ Then reload your shell:
     source $SHELL_RC
 
 Quick start:
-  hop2 add work ~/work         # Add a directory shortcut
-  hop2 work                    # Jump to that directory
-  hop2 cmd gs 'git status'     # Add a command shortcut
-  hop2 gs                      # Run that command
+  hop2 add work            # Add current directory as 'work'
+  hop2 work                # Jump to that directory
+
+  hop2 cmd gs 'git status' # Create command alias 'gs'
+  hop2 gs                  # Run git status
+
+  h work                   # Even shorter: use 'h' to jump
 
 For more info: hop2 --help
 EOF
