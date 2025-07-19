@@ -1,4 +1,3 @@
-```bash
 ![hop2](assets/logos/hop2-logo-wide.svg)
 
 # hop2 🚀
