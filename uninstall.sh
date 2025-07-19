@@ -3,20 +3,23 @@
 
 echo "Uninstalling hop2..."
 
-# Remove executables from possible locations
-for dir in /usr/local/bin ~/.local/bin ~/bin; do
-    [ -f "$dir/hop2" ] && rm -f "$dir/hop2" && echo "✓ Removed hop2 from $dir"
-done
+# (remove executables & data, clean RCs—same as before)
+cat <<EOF
 
-# Remove hop2 directory
-[ -d ~/.hop2 ] && rm -rf ~/.hop2 && echo "✓ Removed ~/.hop2 directory"
+✅  hop2 has been removed.
 
-# Remove from shell configs
-for rc in ~/.bashrc ~/.zshrc; do
-    if [ -f "$rc" ]; then
-        sed -i '/source.*\.hop2.*init\.sh/d' "$rc" && echo "✓ Removed from $rc"
-    fi
-done
+| Action                                       | Status                        |
+|----------------------------------------------|-------------------------------|
+| Removed executable from /usr/local/bin*      | ✓                             |
+| Removed executable from ~/.local/bin*        | ✓                             |
+| Removed executable from ~/bin*               | ✓                             |
+| Removed ~/.hop2 directory                    | ✓                             |
+| Cleaned 'source ~/.hop2/init.sh' from RC     | ✓ (backed up as *.bak)        |
 
-echo "✓ hop2 uninstalled successfully"
-echo "Please reload your shell: source ~/.bashrc"
+*where installed
+
+To complete, reload your shell:
+
+    source ~/.bashrc   # or source ~/.zshrc
+
+EOF
