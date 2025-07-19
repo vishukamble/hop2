@@ -27,19 +27,23 @@ RESERVED_ALIASES = [
 
 def print_help():
     """Custom table-formatted help"""
-    print("Usage: hop2 <command> [args]\n")
-    print(f"{'Command':<15} What it does")
-    print("-" * 50)
-    for cmd, desc in [
-        ("update-me",    "Update hop2 to the latest version"),
-        ("uninstall-me", "Uninstall hop2"),
-        ("add",          "Add directory shortcut (current dir by default)"),
-        ("cmd",          "Add command shortcut"),
-        ("list",         "List all shortcuts"),
-        ("rm",           "Remove a shortcut"),
-        ("go",           "(internal)")
-    ]:
-        print(f"{cmd:<15} {desc}")
+    print("\nhop2 - Quick directory jumping and command aliasing\n")
+    print("Usage: hop2 <command> [args]")
+    print("       hop2 <alias>        # Jump to directory or run command\n")
+
+    print("Commands:")
+    print("─" * 50)
+    print(f"{'  add <alias> [path]':<25} Add directory shortcut")
+    print(f"{'  cmd <alias> <command>':<25} Add command shortcut")
+    print(f"{'  list, ls':<25} List all shortcuts")
+    print(f"{'  rm <alias>':<25} Remove a shortcut")
+    print(f"{'  update-me':<25} Update hop2 to latest")
+    print(f"{'  uninstall-me':<25} Uninstall hop2")
+    print("\nExamples:")
+    print("  hop2 add work          # Save current dir as 'work'")
+    print("  hop2 work              # Jump to work directory")
+    print("  hop2 cmd gs 'git status'")
+    print("  hop2 gs                # Run git status")
     print()
     sys.exit(0)
 
@@ -229,19 +233,35 @@ def update_me(_=None):
 
 
 def uninstall_me(_=None):
-    ans = input("Are you sure you want to uninstall hop2? (y/N): ").lower()
-    if ans != 'y':
-        print("Cancelled.")
+    print("\n🗑️  Uninstall hop2?\n")
+    ans = input("Type 'yes' to confirm: ")
+    if ans.lower() != 'yes':
+        print("❌ Cancelled")
         return 1
 
-    print("Uninstalling hop2…")
+    print("\n📦 Uninstalling hop2...\n")
+
+    removed_from = []
     for d in ['/usr/local/bin', os.path.expanduser('~/.local/bin'), os.path.expanduser('~/bin')]:
         p = os.path.join(d, 'hop2')
         if os.path.exists(p):
-            os.remove(p)
-            print(f"✓ Removed {p}")
-    shutil.rmtree(os.path.expanduser('~/.hop2'), ignore_errors=True)
-    print("\nTo complete uninstall, remove `source ~/.hop2/init.sh` from your RC.")
+            try:
+                os.remove(p)
+                removed_from.append(d)
+                print(f"  ✓ Removed from {d}")
+            except:
+                print(f"  ✗ Couldn't remove from {d} (need sudo?)")
+
+    if os.path.exists(os.path.expanduser('~/.hop2')):
+        shutil.rmtree(os.path.expanduser('~/.hop2'), ignore_errors=True)
+        print("  ✓ Removed ~/.hop2 directory")
+
+    print("\n⚠️  Final step:")
+    print("─" * 40)
+    print("Remove this line from your ~/.bashrc or ~/.zshrc:\n")
+    print("    source ~/.hop2/init.sh\n")
+    print("Then reload your shell.")
+    print("─" * 40)
     return 0
 
 
@@ -249,6 +269,9 @@ def main():
     # if no args or help flag, show our custom help
     if len(sys.argv) == 1 or sys.argv[1] in ('-h', '--help'):
         print_help()
+
+    if sys.argv[1] == 'ls':
+        sys.argv[1] = 'list'  # Convert ls to list
 
     parser = argparse.ArgumentParser(add_help=False)
     sp = parser.add_subparsers(dest='command')
@@ -290,7 +313,7 @@ def main():
             sys.exit(0)
         if generate_cd_command(alias):
             sys.exit(0)
-        print(f"✗ No shortcut found: {alias}")
+        print(f"✗ No shortcut '{alias}' found. Try 'hop2 list' to see all shortcuts.")
         sys.exit(1)
 
     code = args.func(args)
