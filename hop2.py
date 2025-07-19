@@ -223,7 +223,7 @@ def main():
     rm_parser.add_argument('alias', help='Shortcut to remove')
 
     # Go (for shell integration)
-    go_parser = subparsers.add_parser('go', help='Go to directory (used by shell function)')
+    go_parser = subparsers.add_parser('go', help=argparse.SUPPRESS)
     go_parser.add_argument('alias', help='Directory shortcut')
 
     # Parse args
@@ -231,7 +231,6 @@ def main():
 
     # Initialize DB
     init_db()
-
     # Handle commands
     if args.command == 'add':
         add_directory(args.alias, args.path)
@@ -247,7 +246,7 @@ def main():
         if not generate_cd_command(args.alias):
             print(f"✗ No directory shortcut: {args.alias}")
             sys.exit(1)
-    elif len(sys.argv) > 1:
+    elif args.command is None and len(sys.argv) > 1:  # Added check for None
         # Try to run as shortcut
         alias = sys.argv[1]
 
@@ -263,7 +262,6 @@ def main():
         sys.exit(1)
     else:
         parser.print_help()
-
 
 if __name__ == "__main__":
     main()
