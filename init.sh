@@ -13,10 +13,16 @@ hop2() {
     fi
 
     local output
-    # Execute the python script and capture ALL output.
-    # 'command' ensures we call the real executable, not this function.
+    # If the user asked to uninstall or update, run hop2 directly (no capture),
+    # so prompts and input() work as expected:
+    if [ "$1" = "uninstall-me" ] || [ "$1" = "--uninstall" ] || [ "$1" = "update-me" ] || [ "$1" = "--update" ] || [ "$1" = "update" ]; then
+        command hop2 "$@"
+        return $?
+    fi
+
+    # Otherwise capture output so we can intercept __HOP2_CD:… sequences
     output=$(command hop2 "$@")
-    local exit_code=$?
+    exit_code=$?
 
     # Check if the python script gave us the magic string to change directory
     if [[ $output == __HOP2_CD:* ]]; then
