@@ -4,53 +4,43 @@
 # source ~/.hop2/init.sh
 
 # Main hop2 function that handles directory changes and command shortcuts
+# Main hop2 function that handles directory changes and command shortcuts
 hop2() {
-    # For known commands, pass through directly
-    if [ "$1" = "add" ] || [ "$1" = "cmd" ] || [ "$1" = "list" ] || [ "$1" = "ls" ] || [ "$1" = "rm" ] || [ "$1" = "update-me" ] || [ "$1" = "uninstall-me" ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
-        command hop2 "$@"
+    # Don't do anything if no arguments are provided
+    if [ "$#" -eq 0 ]; then
+        command hop2 --help
         return
     fi
 
-    # For single arg that's not a known command, try as shortcut
-    if [ "$#" -eq 1 ]; then
-        # Try to use it as a directory shortcut first
-        local output
-        output=$(command hop2 go "$1" 2>&1)
+    local output
+    # Execute the python script and capture ALL output.
+    # 'command' ensures we call the real executable, not this function.
+    output=$(command hop2 "$@")
+    local exit_code=$?
 
-        if [[ $output == __HOP2_CD:* ]]; then
-            # Extract path and cd to it
-            local path="${output#__HOP2_CD:}"
-            cd "$path" || return 1
-        else
-            # Not a directory, try as command
-            command hop2 "$@"
-        fi
-    elif [ "$1" = "go" ]; then
-        # Explicit go command
-        local output
-        output=$(command hop2 "$@" 2>&1)
-
-        if [[ $output == __HOP2_CD:* ]]; then
-            local path="${output#__HOP2_CD:}"
-            cd "$path" || return 1
-        else
-            echo "$output"
-        fi
-    else
-        # Multi-arg shortcuts (like 'hop2 gs arg1 arg2')
-        command hop2 "$@"
+    # Check if the python script gave us the magic string to change directory
+    if [[ $output == __HOP2_CD:* ]]; then
+        local path="${output#__HOP2_CD:}"
+        cd "$path" || return 1
+    elif [ $exit_code -ne 0 ]; then
+        # If the script failed, print its output (which is the error message)
+        # to stderr and preserve the exit code.
+        echo "$output" >&2
+        return $exit_code
+    elif [ -n "$output" ];then
+        # If the script succeeded and printed something, show it.
+        # This is for commands like 'hop2 gs' which print "→ Running...".
+        echo "$output"
     fi
 }
 
-# Shorter alias for hop2
-alias h2="hop2"
-
-# Even shorter function for jumping to directories: "h <alias>"
+# Shorter alias 'h' for jumping (or listing)
 h() {
     if [ -z "$1" ]; then
         hop2 list
     else
-        hop2 go "$1"
+        # Just call the main hop2 function, it knows what to do
+        hop2 "$1"
     fi
 }
 
