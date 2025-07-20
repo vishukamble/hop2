@@ -321,6 +321,7 @@ def main():
     p_list = sp.add_parser('list', help=argparse.SUPPRESS)
     p_list.set_defaults(func=lambda a: list_all())
 
+
     p_rm = sp.add_parser('rm', help=argparse.SUPPRESS)
     p_rm.add_argument('alias')
     p_rm.set_defaults(func=lambda a: remove_shortcut(a.alias))
