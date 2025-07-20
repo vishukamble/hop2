@@ -200,11 +200,7 @@ def list_all(_=None):
 
         # Don't show the user's home dir in the common path, replace with ~
         home_dir = os.path.expanduser("~")
-        if common_base.startswith(home_dir):
-            display_base = "~" + common_base[len(home_dir):]
-        else:
-            display_base = common_base
-
+        display_base = f"~{common_base[len(home_dir):]}" if common_base.startswith(home_dir) else common_base
         print(f"🌲 Common Root: {display_base}/\n")
 
         for d in dirs:
@@ -212,8 +208,8 @@ def list_all(_=None):
             relative_path = os.path.relpath(d['path'], common_base)
             print(f"  {d['alias']:<15} → ./{relative_path:<40} ({d['uses']} uses)")
 
-        # Your chosen character art!
-        print("""
+        # The 'r' before the """ fixes the SyntaxWarning
+        print(r"""
                      .--.
                     |o_o |
                     |:_/ |
@@ -227,7 +223,7 @@ def list_all(_=None):
         print("\n⚡ Command Shortcuts")
         print("─" * 70)
         for alias, command, uses in cmds:
-            display_cmd = command if len(command) <= 45 else command[:42] + "..."
+            display_cmd = command if len(command) <= 45 else f"{command[:42]}..."
             print(f"  {alias:<15} → {display_cmd:<45} ({uses} uses)")
 
     if not dirs and not cmds:
