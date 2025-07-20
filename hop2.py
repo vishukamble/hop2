@@ -287,77 +287,81 @@ def update_me(_=None):
 def uninstall_me(_=None):
     """A comprehensive uninstaller that removes files and cleans up shell configs."""
     print("\n🗑️  Are you sure you want to uninstall hop2?\n")
-
-    try:
-        print("This will remove the executable, data, and the source line from your shell config. Type 'yes': ", end='',
-              flush=True)
-        ans = input()
-
-    except (EOFError, KeyboardInterrupt):
-        print("\n❌ Uninstallation cancelled.")
-        return 1
-
+    ans = input("This will remove the executable, data, and the source line from your shell config.\n"
+                "Type 'yes' to confirm: ")
     if ans.lower() != 'yes':
         print("❌ Uninstallation cancelled.")
         return 1
 
-    print("\n📦 Uninstalling hop2...")
+    print("\n📦 Uninstalling hop2...\n")
 
-    # --- File and Directory Removal ---
-    install_paths = ['/usr/local/bin', os.path.expanduser('~/.local/bin'), os.path.expanduser('~/bin')]
     removed_from = []
     errors = []
-    for d in install_paths:
+
+    # 1) Remove hop2 executable from common install locations
+    for d in ['/usr/local/bin', os.path.expanduser('~/.local/bin'), os.path.expanduser('~/bin')]:
         p = os.path.join(d, 'hop2')
         if os.path.exists(p):
             try:
                 os.remove(p)
                 removed_from.append(d)
-            except OSError:
-                errors.append(f"Couldn't remove from {d}")
-    hop2_dir_path = os.path.expanduser('~/.hop2')
+            except OSError as e:
+                errors.append(f"Couldn’t remove from {d}: {e}")
+
+    # 2) Remove ~/.hop2 data directory
+    hop2_dir = os.path.expanduser('~/.hop2')
     dir_removed = False
-    if os.path.exists(hop2_dir_path):
+    if os.path.isdir(hop2_dir):
         try:
-            shutil.rmtree(hop2_dir_path)
+            shutil.rmtree(hop2_dir)
             dir_removed = True
-        except OSError:
-            errors.append("Couldn't remove ~/.hop2")
+        except OSError as e:
+            errors.append(f"Couldn’t remove {hop2_dir}: {e}")
 
-    # --- Automatically Clean .bashrc and .zshrc ---
-    shell_cleaned = False
-    for rc_file_name in ['.bashrc', '.zshrc']:
-        rc_file_path = os.path.expanduser(f"~/{rc_file_name}")
-        if os.path.exists(rc_file_path):
-            try:
-                sed_command = f"sed -i.bak '/# hop2 shell integration/{{N;d;}}' {rc_file_path}"
-                subprocess.run(['bash', '-c', sed_command], check=True, capture_output=True)
-                shell_cleaned = True
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                errors.append(f"Failed to automatically clean {rc_file_name}.")
+    # 3) Clean up shell RC files
+    shell_cleaned = []
+    for rc in ['.bashrc', '.zshrc']:
+        path = os.path.expanduser(f"~/{rc}")
+        if not os.path.exists(path):
+            continue
 
-    # --- Final Report Table ---
-    print("\n┌──────────────────────────────────────────┬────────┐")
-    print("│ Action                                   │ Status │")
-    print("├──────────────────────────────────────────┼────────┤")
-    print(f"│ Removed hop2 executable                  │ {'✅' if removed_from else 'n/a'}      │")
-    print(f"│ Removed ~/.hop2 data directory           │ {'✅' if dir_removed else 'n/a'}      │")
-    print(f"│ Cleaned shell configuration file(s)      │ {'✅' if shell_cleaned else 'n/a'}      │")
-    print("└──────────────────────────────────────────┴────────┘\n")
+        # remove any line that exactly matches 'source ~/.hop2/init.sh'
+        try:
+            with open(path, 'r') as f:
+                lines = f.readlines()
+            with open(path, 'w') as f:
+                for line in lines:
+                    if line.strip() == 'source ~/.hop2/init.sh':
+                        continue
+                    f.write(line)
+            shell_cleaned.append(rc)
+        except Exception as e:
+            errors.append(f"Failed to clean {rc}: {e}")
+
+    # 4) Final report
+    print("┌──────────────────────────────────────────╥────────┐")
+    print("│ Action                                   ║ Status │")
+    print("╞══════════════════════════════════════════╫════════╡")
+    print(f"│ Removed hop2 executable                  ║ {'✅' if removed_from else 'n/a'}    │")
+    print(f"│ Removed ~/.hop2 data directory           ║ {'✅' if dir_removed else 'n/a'}    │")
+    print(f"│ Cleaned shell config (.bashrc/.zshrc)    ║ {'✅' if shell_cleaned else 'n/a'}    │")
+    print("└──────────────────────────────────────────╨────────┘\n")
 
     if errors:
-        print("⚠️  Encountered some issues:")
-        for error in errors:
-            print(f"  - {error}")
+        print("⚠️  Some issues encountered:")
+        for e in errors:
+            print(f"  • {e}")
         print()
 
     print("✅ hop2 has been uninstalled.")
     if not shell_cleaned:
-        print("\n⚠️  Manual step required:")
-        print("Please remove the 'hop2 shell integration' block from your shell config file.\n")
+        print("⚠️  Manual cleanup required: remove")
+        print("    source ~/.hop2/init.sh")
+        print("  from your shell RC file.\n")
 
-    print("Please restart your shell to complete the uninstallation.")
+    print("Please restart your shell to complete uninstallation.")
     return 0
+
 
 
 def main():
