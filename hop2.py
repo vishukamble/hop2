@@ -21,7 +21,6 @@ DB_DIR = os.path.dirname(DB_PATH)
 # Reserved words
 RESERVED_ALIASES = [
     'add', 'cmd', 'list', 'rm', 'go',
-    'update-me', 'uninstall-me',
     'help', '--help', '-h'
 ]
 
@@ -38,8 +37,6 @@ def print_help():
     print(f"{'  cmd <alias> <command>':<25} Add command shortcut")
     print(f"{'  list, ls':<25} List all shortcuts")
     print(f"{'  rm <alias>':<25} Remove a shortcut")
-    print(f"{'  update-me':<25} Update hop2 to latest")
-    print(f"{'  uninstall-me':<25} Uninstall hop2")
     print("\nExamples:")
     print("  hop2 add work          # Save current dir as 'work'")
     print("  hop2 work              # Jump to work directory")
