@@ -105,7 +105,7 @@ def init_db():
 def add_directory(alias, path=None):
     """Add a directory shortcut"""
     if alias in RESERVED_ALIASES:
-        print(f"✗ '{alias}' is reserved and cannot be used")
+        print(f"❌ '{alias}' is a reserved keyword and cannot be used.")
         return 1
 
     if path is None:
@@ -114,7 +114,7 @@ def add_directory(alias, path=None):
         path = os.path.abspath(os.path.expanduser(path))
 
     if not os.path.exists(path):
-        print(f"✗ Path does not exist: {path}")
+        print(f"❌ Path does not exist: {path}")
         return 1
 
     created = datetime.now(timezone.utc).isoformat()
@@ -125,19 +125,19 @@ def add_directory(alias, path=None):
                 "INSERT INTO directories (alias, path, created_at) VALUES (?, ?, ?)",
                 (alias, path, created)
             )
-            print(f"✓ Created: {alias} → {path}")
+            print(f"✅ Created: {alias} → {path}")
         except sqlite3.IntegrityError:
             c.execute(
                 "UPDATE directories SET path = ? WHERE alias = ?", (path, alias)
             )
-            print(f"✓ Updated: {alias} → {path}")
+            print(f"✅ Updated: {alias} → {path}")
     return 0
 
 
 def add_command(alias, cmd_parts):
     """Add a command shortcut"""
     if alias in RESERVED_ALIASES:
-        print(f"✗ '{alias}' is reserved and cannot be used")
+        print(f"❌ '{alias}' is a reserved keyword and cannot be used.")
         return 1
 
     command = ' '.join(cmd_parts)
@@ -149,12 +149,12 @@ def add_command(alias, cmd_parts):
                 "INSERT INTO commands (alias, command, created_at) VALUES (?, ?, ?)",
                 (alias, command, created)
             )
-            print(f"✓ Created command: {alias} → {command}")
+            print(f"✅ Created command: {alias} → {command}")
         except sqlite3.IntegrityError:
             c.execute(
                 "UPDATE commands SET command = ? WHERE alias = ?", (command, alias)
             )
-            print(f"✓ Updated command: {alias} → {command}")
+            print(f"✅ Updated command: {alias} → {command}")
     return 0
 
 
@@ -231,18 +231,21 @@ def list_all(_=None):
 
 
 def remove_shortcut(alias):
+    """Remove a directory or command shortcut."""
     with get_conn() as conn:
         c = conn.cursor()
+        # Try to delete from directories
         c.execute("DELETE FROM directories WHERE alias = ?", (alias,))
         if c.rowcount:
-            print(f"✓ Removed directory shortcut: {alias}")
+            print(f"✅ Removed directory shortcut: {alias}")
             return 0
+        # If not found, try to delete from commands
         c.execute("DELETE FROM commands WHERE alias = ?", (alias,))
         if c.rowcount:
-            print(f"✓ Removed command shortcut: {alias}")
+            print(f"✅ Removed command shortcut: {alias}")
             return 0
-
-    print(f"✗ No shortcut found: {alias}")
+    # If not found in either table
+    print(f"❌ No shortcut found with the alias: {alias}")
     return 1
 
 
@@ -277,14 +280,15 @@ def update_me(_=None):
         os.unlink(tmp)
         return 0
     except Exception as e:
-        print(f"✗ Update failed: {e}")
+        print(f"❌ Update failed: {e}")
         return 1
 
 
 def uninstall_me(_=None):
+    """A comprehensive uninstaller that removes files and cleans up shell configs."""
     print("\n🗑️  Are you sure you want to uninstall hop2?\n")
     try:
-        ans = input("This will remove the executable and the ~/.hop2 directory. Type 'yes' to confirm: ")
+        ans = input("This will remove the executable, data, and the source line from your shell config. Type 'yes': ")
     except (EOFError, KeyboardInterrupt):
         print("\n❌ Uninstallation cancelled.")
         return 1
@@ -295,11 +299,10 @@ def uninstall_me(_=None):
 
     print("\n📦 Uninstalling hop2...")
 
-    # --- Removal Logic ---
+    # --- File and Directory Removal ---
     install_paths = ['/usr/local/bin', os.path.expanduser('~/.local/bin'), os.path.expanduser('~/bin')]
     removed_from = []
     errors = []
-
     for d in install_paths:
         p = os.path.join(d, 'hop2')
         if os.path.exists(p):
@@ -307,8 +310,7 @@ def uninstall_me(_=None):
                 os.remove(p)
                 removed_from.append(d)
             except OSError:
-                errors.append(f"Couldn't remove from {d} (permission error?)")
-
+                errors.append(f"Couldn't remove from {d}")
     hop2_dir_path = os.path.expanduser('~/.hop2')
     dir_removed = False
     if os.path.exists(hop2_dir_path):
@@ -316,14 +318,27 @@ def uninstall_me(_=None):
             shutil.rmtree(hop2_dir_path)
             dir_removed = True
         except OSError:
-            errors.append("Couldn't remove ~/.hop2 directory.")
+            errors.append("Couldn't remove ~/.hop2")
 
-    # --- Beautiful Table Output ---
+    # --- Automatically Clean .bashrc and .zshrc ---
+    shell_cleaned = False
+    for rc_file_name in ['.bashrc', '.zshrc']:
+        rc_file_path = os.path.expanduser(f"~/{rc_file_name}")
+        if os.path.exists(rc_file_path):
+            try:
+                sed_command = f"sed -i.bak '/# hop2 shell integration/{{N;d;}}' {rc_file_path}"
+                subprocess.run(['bash', '-c', sed_command], check=True, capture_output=True)
+                shell_cleaned = True
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                errors.append(f"Failed to automatically clean {rc_file_name}.")
+
+    # --- Final Report Table ---
     print("\n┌──────────────────────────────────────────┬────────┐")
     print("│ Action                                   │ Status │")
     print("├──────────────────────────────────────────┼────────┤")
-    print(f"│ Removed hop2 executable                  │ {'✓' if removed_from else 'n/a'}      │")
-    print(f"│ Removed ~/.hop2 data directory           │ {'✓' if dir_removed else 'n/a'}      │")
+    print(f"│ Removed hop2 executable                  │ {'✅' if removed_from else 'n/a'}      │")
+    print(f"│ Removed ~/.hop2 data directory           │ {'✅' if dir_removed else 'n/a'}      │")
+    print(f"│ Cleaned shell configuration file(s)      │ {'✅' if shell_cleaned else 'n/a'}      │")
     print("└──────────────────────────────────────────┴────────┘\n")
 
     if errors:
@@ -332,11 +347,12 @@ def uninstall_me(_=None):
             print(f"  - {error}")
         print()
 
-    print("✅ hop2 has been removed.")
-    print("\n⚠️  Final manual step:")
-    print("Remove this line from your ~/.bashrc or ~/.zshrc file:\n")
-    print("    source ~/.hop2/init.sh\n")
-    print("Then, restart your shell to complete the uninstallation.")
+    print("✅ hop2 has been uninstalled.")
+    if not shell_cleaned:
+        print("\n⚠️  Manual step required:")
+        print("Please remove the 'hop2 shell integration' block from your shell config file.\n")
+
+    print("Please restart your shell to complete the uninstallation.")
     return 0
 
 
@@ -384,6 +400,8 @@ def main():
     init_db()
 
     # If it's NOT a known subcommand, treat it as a custom alias
+    # In your main() function, update the alias-handling block:
+    # If it's NOT a known subcommand, treat it as a custom alias
     if command_to_run not in known_subcommands:
         alias = command_to_run
         extra_args = sys.argv[2:]
@@ -391,7 +409,8 @@ def main():
         path = get_directory(alias)
         if path:
             if extra_args:
-                print(f"✗ Directory shortcuts don't accept arguments. Did you mean 'cd {path}'?")
+                # New emoji for this error
+                print(f"❌ Directory shortcuts do not accept arguments. Did you mean 'cd {path}'?")
                 sys.exit(1)
             print(f"__HOP2_CD:{path}")
             sys.exit(0)
@@ -399,7 +418,8 @@ def main():
         if run_command(alias, extra_args):
             sys.exit(0)
 
-        print(f"✗ No shortcut '{alias}' found. Try 'hop2 list'.")
+        # New emoji for the final "not found" error
+        print(f"❌ No shortcut '{alias}' found. Try 'hop2 list'.")
         sys.exit(1)
 
     # If we are here, it IS a known subcommand, so use a new parser
