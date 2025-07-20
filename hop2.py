@@ -288,11 +288,11 @@ def uninstall_me(_=None):
     """A comprehensive uninstaller that removes files and cleans up shell configs."""
     print("\n🗑️  Are you sure you want to uninstall hop2?\n")
 
-    # Manually flush the output buffer to ensure the message appears before the input prompt.
-    sys.stdout.flush()
-
     try:
-        ans = input("This will remove the executable, data, and the source line from your shell config. Type 'yes': ")
+        print("This will remove the executable, data, and the source line from your shell config. Type 'yes': ", end='',
+              flush=True)
+        ans = input()
+
     except (EOFError, KeyboardInterrupt):
         print("\n❌ Uninstallation cancelled.")
         return 1
