@@ -264,70 +264,81 @@ def uninstall_me(_=None):
     print("─" * 40)
     return 0
 
-
 def main():
-    # if no args or help flag, show our custom help
-    if len(sys.argv) == 1 or sys.argv[1] in ('-h', '--help'):
+    # If no args or help flag, show our custom help
+    if len(sys.argv) == 1 or (len(sys.argv) > 1 and sys.argv[1] in ('-h', '--help')):
         print_help()
+        sys.exit(0)
 
-    if sys.argv[1] == 'ls':
-        sys.argv[1] = 'list'  # Convert ls to list
+    # Alias 'ls' to 'list'
+    if len(sys.argv) > 1 and sys.argv[1] == 'ls':
+        sys.argv[1] = 'list'
 
-    # Check if it's a known subcommand BEFORE argparse
-    known_commands = ['add', 'cmd', 'list', 'rm', 'go', 'update-me', 'uninstall-me']
+    # These are the only built-in commands that argparse should handle
+    known_commands = {'add', 'cmd', 'list', 'rm', 'update-me', 'uninstall-me'}
+    command_to_run = sys.argv[1]
 
-    if len(sys.argv) > 1 and sys.argv[1] not in known_commands:
-        # It's not a known subcommand, so check if it's a user-defined shortcut
-        alias = sys.argv[1]
-        init_db()  # Need to init DB before checking
+    # Initialize DB for all operations
+    init_db()
 
-        # Try as command first
-        if run_command(alias, sys.argv[2:]):
+    # If it's NOT a known command, treat it as a custom alias
+    if command_to_run not in known_commands:
+        alias = command_to_run
+        extra_args = sys.argv[2:]
+
+        # 1. Try to find it as a directory alias
+        path = get_directory(alias)
+        if path:
+            if extra_args:
+                print(f"✗ Directory shortcuts do not accept arguments. Did you mean 'cd {path}'?")
+                sys.exit(1)
+            # This is the magic string the shell script will look for
+            print(f"__HOP2_CD:{path}")
             sys.exit(0)
 
-        # Then try as directory
-        if generate_cd_command(alias):
+        # 2. If not a directory, try it as a command alias
+        if run_command(alias, extra_args):
             sys.exit(0)
 
+        # 3. If it's neither, then it's an error
         print(f"✗ No shortcut '{alias}' found. Try 'hop2 list' to see all shortcuts.")
         sys.exit(1)
 
-    # If we get here, it's a known command, use argparse
+    # If we are here, it IS a known command, so let argparse handle it
     parser = argparse.ArgumentParser(add_help=False)
-    sp = parser.add_subparsers(dest='command')
+    sp = parser.add_subparsers(dest='command', required=True)
 
-    p = sp.add_parser('add', help=argparse.SUPPRESS)
-    p.add_argument('alias')
-    p.add_argument('path', nargs='?')
-    p.set_defaults(func=lambda a: add_directory(a.alias, a.path))
+    p_add = sp.add_parser('add', help=argparse.SUPPRESS)
+    p_add.add_argument('alias')
+    p_add.add_argument('path', nargs='?')
+    p_add.set_defaults(func=lambda a: add_directory(a.alias, a.path))
 
-    p = sp.add_parser('cmd', help=argparse.SUPPRESS)
-    p.add_argument('alias')
-    p.add_argument('cmd', nargs='+')
-    p.set_defaults(func=lambda a: add_command(a.alias, a.cmd))
+    p_cmd = sp.add_parser('cmd', help=argparse.SUPPRESS)
+    p_cmd.add_argument('alias')
+    p_cmd.add_argument('cmd_str', nargs='+') # Changed from 'cmd' to avoid conflict
+    p_cmd.set_defaults(func=lambda a: add_command(a.alias, a.cmd_str))
 
-    p = sp.add_parser('list', help=argparse.SUPPRESS)
-    p.set_defaults(func=list_all)
+    p_list = sp.add_parser('list', help=argparse.SUPPRESS)
+    p_list.set_defaults(func=lambda a: list_all())
 
-    p = sp.add_parser('rm', help=argparse.SUPPRESS)
-    p.add_argument('alias')
-    p.set_defaults(func=lambda a: remove_shortcut(a.alias))
+    p_rm = sp.add_parser('rm', help=argparse.SUPPRESS)
+    p_rm.add_argument('alias')
+    p_rm.set_defaults(func=lambda a: remove_shortcut(a.alias))
 
-    p = sp.add_parser('go', help=argparse.SUPPRESS)
-    p.add_argument('alias')
-    p.set_defaults(func=lambda a: (generate_cd_command(a.alias) or sys.exit(1)))
+    p_update = sp.add_parser('update-me', help=argparse.SUPPRESS)
+    p_update.set_defaults(func=lambda a: update_me())
 
-    p = sp.add_parser('update-me', help=argparse.SUPPRESS)
-    p.set_defaults(func=update_me)
+    p_uninstall = sp.add_parser('uninstall-me', help=argparse.SUPPRESS)
+    p_uninstall.set_defaults(func=lambda a: uninstall_me())
 
-    p = sp.add_parser('uninstall-me', help=argparse.SUPPRESS)
-    p.set_defaults(func=uninstall_me)
-
-    args = parser.parse_args()
-    init_db()
-
-    code = args.func(args)
-    sys.exit(code if isinstance(code, int) else 0)
+    try:
+        args = parser.parse_args()
+        if hasattr(args, 'func'):
+            code = args.func(args)
+            sys.exit(code if isinstance(code, int) else 0)
+    except SystemExit as e:
+        # Prevents argparse from printing its own help message on error
+        sys.exit(e.code)
 
 if __name__ == "__main__":
     main()
