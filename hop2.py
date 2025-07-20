@@ -156,29 +156,57 @@ def get_command(alias):
 
 
 def list_all(_=None):
+    """Lists all shortcuts, visualizing directory paths from a common root."""
     with sqlite3.connect(DB_PATH) as conn:
+        conn.row_factory = sqlite3.Row  # Make sure we can access columns by name
         c = conn.cursor()
-        c.execute("SELECT alias, path, uses FROM directories ORDER BY uses DESC, alias")
+        c.execute("SELECT alias, path, uses FROM directories ORDER BY path")
         dirs = c.fetchall()
         c.execute("SELECT alias, command, uses FROM commands ORDER BY uses DESC, alias")
         cmds = c.fetchall()
 
     if dirs:
-        print("\n📁 Directory shortcuts:")
-        print("-" * 60)
-        for alias, path, uses in dirs:
-            disp = path.replace(os.path.expanduser("~"), "~")
-            print(f"{alias:<15} → {disp:<40} ({uses} uses)")
+        print("\n📁 Directory Shortcuts (Mario is ready to jump!)")
+        print("─" * 70)
+
+        dir_paths = [d['path'] for d in dirs]
+        # Find the longest common starting path
+        common_base = os.path.commonpath(dir_paths) if len(dir_paths) > 1 else os.path.dirname(dir_paths[0])
+
+        # Don't show the user's home dir in the common path, replace with ~
+        home_dir = os.path.expanduser("~")
+        if common_base.startswith(home_dir):
+            display_base = "~" + common_base[len(home_dir):]
+        else:
+            display_base = common_base
+
+        print(f"🌲 Common Root: {display_base}/\n")
+
+        for d in dirs:
+            # Show the part of the path that is *not* common
+            relative_path = os.path.relpath(d['path'], common_base)
+            print(f"  {d['alias']:<15} → ./{relative_path:<40} ({d['uses']} uses)")
+
+        # Your chosen character art!
+        print("""
+                     .--.
+                    |o_o |
+                    |:_/ |
+                   //   \ \
+                  (|     | )
+                 /'\_   _/`\
+                 \___)=(___/
+        """)
 
     if cmds:
-        print("\n⚡ Command shortcuts:")
-        print("-" * 60)
+        print("\n⚡ Command Shortcuts")
+        print("─" * 70)
         for alias, command, uses in cmds:
-            display_cmd = command if len(command) <= 40 else command[:37] + "..."
-            print(f"{alias:<15} → {display_cmd:<40} ({uses} uses)")
+            display_cmd = command if len(command) <= 45 else command[:42] + "..."
+            print(f"  {alias:<15} → {display_cmd:<45} ({uses} uses)")
 
     if not dirs and not cmds:
-        print("No shortcuts yet; run `hop2 add <alias>` or `hop2 cmd <alias> <command>`")
+        print("No shortcuts yet. Go add some! `hop2 add <alias>`")
 
 
 def remove_shortcut(alias):
@@ -265,81 +293,97 @@ def uninstall_me(_=None):
     return 0
 
 def main():
-    # If no args or help flag, show our custom help
-    if len(sys.argv) == 1 or (len(sys.argv) > 1 and sys.argv[1] in ('-h', '--help')):
+    # Use argparse from the start to handle flags like --uninstall and --help
+    parser = argparse.ArgumentParser(
+        description="hop2 - Quick directory jumping and command aliasing",
+        add_help=False # We use a custom help function
+    )
+    parser.add_argument('-h', '--help', action='store_true', help=argparse.SUPPRESS)
+    parser.add_argument('--uninstall', action='store_true', help="Uninstall hop2 from your system.")
+    parser.add_argument('--update', action='store_true', help="Update hop2 to the latest version.")
+
+    # Parse only the known flags, leave the rest for sub-command/alias handling
+    args, remainder = parser.parse_known_args()
+
+    # Handle top-level flags immediately
+    if args.help:
         print_help()
         sys.exit(0)
 
-    # Alias 'ls' to 'list'
-    if len(sys.argv) > 1 and sys.argv[1] == 'ls':
-        sys.argv[1] = 'list'
+    if args.uninstall:
+        uninstall_me()
+        sys.exit(0)
 
-    # These are the only built-in commands that argparse should handle
-    known_commands = {'add', 'cmd', 'list', 'rm', 'update-me', 'uninstall-me'}
+    if args.update:
+        update_me()
+        sys.exit(0)
+
+    # If no remaining args, show help
+    if not remainder:
+        print_help()
+        sys.exit(0)
+
+    # The actual command is the first remaining argument
+    sys.argv = [sys.argv[0]] + remainder
     command_to_run = sys.argv[1]
 
-    # Initialize DB for all operations
+    # Alias 'ls' to 'list'
+    if command_to_run == 'ls':
+        sys.argv[1] = 'list'
+        command_to_run = 'list'
+
+    known_subcommands = {'add', 'cmd', 'list', 'rm'}
     init_db()
 
-    # If it's NOT a known command, treat it as a custom alias
-    if command_to_run not in known_commands:
+    # If it's NOT a known subcommand, treat it as a custom alias
+    if command_to_run not in known_subcommands:
         alias = command_to_run
         extra_args = sys.argv[2:]
 
-        # 1. Try to find it as a directory alias
         path = get_directory(alias)
         if path:
             if extra_args:
-                print(f"✗ Directory shortcuts do not accept arguments. Did you mean 'cd {path}'?")
+                print(f"✗ Directory shortcuts don't accept arguments. Did you mean 'cd {path}'?")
                 sys.exit(1)
-            # This is the magic string the shell script will look for
             print(f"__HOP2_CD:{path}")
             sys.exit(0)
 
-        # 2. If not a directory, try it as a command alias
         if run_command(alias, extra_args):
             sys.exit(0)
 
-        # 3. If it's neither, then it's an error
-        print(f"✗ No shortcut '{alias}' found. Try 'hop2 list' to see all shortcuts.")
+        print(f"✗ No shortcut '{alias}' found. Try 'hop2 list'.")
         sys.exit(1)
 
-    # If we are here, it IS a known command, so let argparse handle it
-    parser = argparse.ArgumentParser(add_help=False)
-    sp = parser.add_subparsers(dest='command', required=True)
+    # If we are here, it IS a known subcommand, so use a new parser
+    sub_parser = argparse.ArgumentParser(add_help=False)
+    sp = sub_parser.add_subparsers(dest='command', required=True)
 
-    p_add = sp.add_parser('add', help=argparse.SUPPRESS)
+    # Add other parsers...
+    p_add = sp.add_parser('add')
     p_add.add_argument('alias')
     p_add.add_argument('path', nargs='?')
     p_add.set_defaults(func=lambda a: add_directory(a.alias, a.path))
 
-    p_cmd = sp.add_parser('cmd', help=argparse.SUPPRESS)
+    p_cmd = sp.add_parser('cmd')
     p_cmd.add_argument('alias')
-    p_cmd.add_argument('cmd_str', nargs='+') # Changed from 'cmd' to avoid conflict
+    p_cmd.add_argument('cmd_str', nargs='+')
     p_cmd.set_defaults(func=lambda a: add_command(a.alias, a.cmd_str))
 
-    p_list = sp.add_parser('list', help=argparse.SUPPRESS)
+    p_list = sp.add_parser('list')
     p_list.set_defaults(func=lambda a: list_all())
 
-
-    p_rm = sp.add_parser('rm', help=argparse.SUPPRESS)
+    p_rm = sp.add_parser('rm')
     p_rm.add_argument('alias')
     p_rm.set_defaults(func=lambda a: remove_shortcut(a.alias))
 
-    p_update = sp.add_parser('update-me', help=argparse.SUPPRESS)
-    p_update.set_defaults(func=lambda a: update_me())
-
-    p_uninstall = sp.add_parser('uninstall-me', help=argparse.SUPPRESS)
-    p_uninstall.set_defaults(func=lambda a: uninstall_me())
-
     try:
-        args = parser.parse_args()
-        if hasattr(args, 'func'):
-            code = args.func(args)
+        parsed_args = sub_parser.parse_args()
+        if hasattr(parsed_args, 'func'):
+            code = parsed_args.func(parsed_args)
             sys.exit(code if isinstance(code, int) else 0)
     except SystemExit as e:
-        # Prevents argparse from printing its own help message on error
         sys.exit(e.code)
+
 
 if __name__ == "__main__":
     main()
