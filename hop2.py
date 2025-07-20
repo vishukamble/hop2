@@ -452,6 +452,9 @@ def main():
     p_rm.add_argument('alias')
     p_rm.set_defaults(func=lambda a: remove_shortcut(a.alias))
 
+    p = sp.add_parser('update', help='Alias for update')
+    p.set_defaults(func=lambda a: update_me())
+
     try:
         parsed_args = sub_parser.parse_args()
         if hasattr(parsed_args, 'func'):
