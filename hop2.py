@@ -273,6 +273,26 @@ def main():
     if sys.argv[1] == 'ls':
         sys.argv[1] = 'list'  # Convert ls to list
 
+    # Check if it's a known subcommand BEFORE argparse
+    known_commands = ['add', 'cmd', 'list', 'rm', 'go', 'update-me', 'uninstall-me']
+
+    if len(sys.argv) > 1 and sys.argv[1] not in known_commands:
+        # It's not a known subcommand, so check if it's a user-defined shortcut
+        alias = sys.argv[1]
+        init_db()  # Need to init DB before checking
+
+        # Try as command first
+        if run_command(alias, sys.argv[2:]):
+            sys.exit(0)
+
+        # Then try as directory
+        if generate_cd_command(alias):
+            sys.exit(0)
+
+        print(f"✗ No shortcut '{alias}' found. Try 'hop2 list' to see all shortcuts.")
+        sys.exit(1)
+
+    # If we get here, it's a known command, use argparse
     parser = argparse.ArgumentParser(add_help=False)
     sp = parser.add_subparsers(dest='command')
 
@@ -306,19 +326,8 @@ def main():
     args = parser.parse_args()
     init_db()
 
-    # fallback: run or cd shortcut
-    if args.command is None:
-        alias = sys.argv[1]
-        if run_command(alias, sys.argv[2:]):
-            sys.exit(0)
-        if generate_cd_command(alias):
-            sys.exit(0)
-        print(f"✗ No shortcut '{alias}' found. Try 'hop2 list' to see all shortcuts.")
-        sys.exit(1)
-
     code = args.func(args)
     sys.exit(code if isinstance(code, int) else 0)
-
 
 if __name__ == "__main__":
     main()
