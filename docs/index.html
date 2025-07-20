@@ -427,15 +427,6 @@
             color: var(--accent);
         }
 
-        .footer-stats {
-            margin: 2rem 0 1rem;
-        }
-
-        .footer-stats img {
-            height: 28px;
-            border-radius: 4px;
-        }
-
         .ai {
             margin-top: 1.5rem;
             font-size: 0.875rem;
@@ -488,6 +479,28 @@
         .copy-btn.copied {
             background: var(--accent);
             color: var(--bg);
+        }
+
+        /* visitor styling */
+        /* Add this to your main <style> block */
+
+        .footer-stats {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background-color: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            color: #999;
+            font-size: 0.875rem;
+            margin: 2rem 0 1rem;
+        }
+
+        #visitor-count {
+            font-weight: bold;
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
         }
 
     </style>
@@ -670,6 +683,10 @@
                 <a href="https://github.com/vishukamble/hop2/blob/main/LICENSE">MIT License</a>
             </p>
 
+            <div class="footer-stats">
+                <span>👀</span> Visitors: <span id="visitor-count">...</span>
+            </div>
+
             <p class="ai">Vibe coded <span style="color: #ff5f57;">&lt;3</span></p>
         </footer>
 
@@ -774,6 +791,33 @@
         section.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
         observer.observe(section);
   });
+
+  // visitor
+  // Add this inside your existing <script> tag, after the other code
+
+  function updateVisitorCount() {
+        // This creates a unique counter for your site.
+        // The API automatically creates it on the first visit.
+        const namespace = 'hop2.vishukamble.io';
+        const key = 'pageviews';
+
+        fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
+            .then(res => res.json())
+            .then(data => {
+                const countElement = document.getElementById('visitor-count');
+                if (countElement) {
+                    // Formats the number with commas (e.g., 1,234)
+                    countElement.innerText = data.value.toLocaleString('en-US');
+                }
+            })
+            .catch(error => {
+                // If the API fails, it will just show '...'
+                console.error("Visitor count failed:", error);
+            });
+  }
+
+    // Call the function when the page loads
+  updateVisitorCount();
 
 </script>
 
