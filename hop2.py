@@ -25,6 +25,7 @@ RESERVED_ALIASES = [
     'help', '--help', '-h'
 ]
 
+
 def print_help():
     """Custom table-formatted help"""
     print("\nhop2 - Quick directory jumping and command aliasing\n")
@@ -66,15 +67,39 @@ def init_db():
     with sqlite3.connect(DB_PATH) as conn:
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS directories
-                     (alias TEXT PRIMARY KEY,
-                      path TEXT NOT NULL,
-                      created_at TEXT,
-                      uses INTEGER DEFAULT 0)''')
+                     (
+                         alias
+                         TEXT
+                         PRIMARY
+                         KEY,
+                         path
+                         TEXT
+                         NOT
+                         NULL,
+                         created_at
+                         TEXT,
+                         uses
+                         INTEGER
+                         DEFAULT
+                         0
+                     )''')
         c.execute('''CREATE TABLE IF NOT EXISTS commands
-                     (alias TEXT PRIMARY KEY,
-                      command TEXT NOT NULL,
-                      created_at TEXT,
-                      uses INTEGER DEFAULT 0)''')
+                     (
+                         alias
+                         TEXT
+                         PRIMARY
+                         KEY,
+                         command
+                         TEXT
+                         NOT
+                         NULL,
+                         created_at
+                         TEXT,
+                         uses
+                         INTEGER
+                         DEFAULT
+                         0
+                     )''')
 
 
 def add_directory(alias, path=None):
@@ -261,42 +286,69 @@ def update_me(_=None):
 
 
 def uninstall_me(_=None):
-    print("\n🗑️  Uninstall hop2?\n")
-    ans = input("Type 'yes' to confirm: ")
-    if ans.lower() != 'yes':
-        print("❌ Cancelled")
+    print("\n🗑️  Are you sure you want to uninstall hop2?\n")
+    try:
+        ans = input("This will remove the executable and the ~/.hop2 directory. Type 'yes' to confirm: ")
+    except (EOFError, KeyboardInterrupt):
+        print("\n❌ Uninstallation cancelled.")
         return 1
 
-    print("\n📦 Uninstalling hop2...\n")
+    if ans.lower() != 'yes':
+        print("❌ Uninstallation cancelled.")
+        return 1
 
+    print("\n📦 Uninstalling hop2...")
+
+    # --- Removal Logic ---
+    install_paths = ['/usr/local/bin', os.path.expanduser('~/.local/bin'), os.path.expanduser('~/bin')]
     removed_from = []
-    for d in ['/usr/local/bin', os.path.expanduser('~/.local/bin'), os.path.expanduser('~/bin')]:
+    errors = []
+
+    for d in install_paths:
         p = os.path.join(d, 'hop2')
         if os.path.exists(p):
             try:
                 os.remove(p)
                 removed_from.append(d)
-                print(f"  ✓ Removed from {d}")
-            except:
-                print(f"  ✗ Couldn't remove from {d} (need sudo?)")
+            except OSError:
+                errors.append(f"Couldn't remove from {d} (permission error?)")
 
-    if os.path.exists(os.path.expanduser('~/.hop2')):
-        shutil.rmtree(os.path.expanduser('~/.hop2'), ignore_errors=True)
-        print("  ✓ Removed ~/.hop2 directory")
+    hop2_dir_path = os.path.expanduser('~/.hop2')
+    dir_removed = False
+    if os.path.exists(hop2_dir_path):
+        try:
+            shutil.rmtree(hop2_dir_path)
+            dir_removed = True
+        except OSError:
+            errors.append("Couldn't remove ~/.hop2 directory.")
 
-    print("\n⚠️  Final step:")
-    print("─" * 40)
-    print("Remove this line from your ~/.bashrc or ~/.zshrc:\n")
+    # --- Beautiful Table Output ---
+    print("\n┌──────────────────────────────────────────┬────────┐")
+    print("│ Action                                   │ Status │")
+    print("├──────────────────────────────────────────┼────────┤")
+    print(f"│ Removed hop2 executable                  │ {'✓' if removed_from else 'n/a'}      │")
+    print(f"│ Removed ~/.hop2 data directory           │ {'✓' if dir_removed else 'n/a'}      │")
+    print("└──────────────────────────────────────────┴────────┘\n")
+
+    if errors:
+        print("⚠️  Encountered some issues:")
+        for error in errors:
+            print(f"  - {error}")
+        print()
+
+    print("✅ hop2 has been removed.")
+    print("\n⚠️  Final manual step:")
+    print("Remove this line from your ~/.bashrc or ~/.zshrc file:\n")
     print("    source ~/.hop2/init.sh\n")
-    print("Then reload your shell.")
-    print("─" * 40)
+    print("Then, restart your shell to complete the uninstallation.")
     return 0
+
 
 def main():
     # Use argparse from the start to handle flags like --uninstall and --help
     parser = argparse.ArgumentParser(
         description="hop2 - Quick directory jumping and command aliasing",
-        add_help=False # We use a custom help function
+        add_help=False  # We use a custom help function
     )
     parser.add_argument('-h', '--help', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--uninstall', action='store_true', help="Uninstall hop2 from your system.")
