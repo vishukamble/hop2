@@ -503,6 +503,21 @@
             font-family: 'JetBrains Mono', monospace;
         }
 
+        /* Demo Video */
+        .video-container {
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            overflow: hidden; /* Ensures the video corners are also rounded */
+            line-height: 0;   /* Removes any extra space below the video */
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-container video {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
     </style>
 </head>
 <body>
@@ -529,6 +544,17 @@
                 </div>
             </div>
         </header>
+
+        <section class="section">
+            <div class="video-container">
+                <video autoplay loop muted playsinline poster="https://github.com/vishukamble/hop2/releases/download/v1.0.0/hop2_screen.png">
+                    <source src="https://github.com/vishukamble/hop2/releases/download/v1.0.0/demo_video.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </section>
+        <section class="section demo demo-section">
+            <h2>What is hop2?</h2>
 
         <section class="section demo demo-section">
             <h2>What is hop2?</h2>
@@ -689,7 +715,7 @@
 
             <p class="ai">Vibe coded <span style="color: #ff5f57;">&lt;3</span></p>
         </footer>
-
+        </section>
     </div>
 <script>
 
