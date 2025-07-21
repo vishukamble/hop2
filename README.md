@@ -1,170 +1,117 @@
-![hop2](assets/logos/hop2-logo-wide.svg)
+![hop2](https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-logo-wide.svg)
 
-# hop2 🚀
+**Stop navigating. Start hopping.**
 
-Quick directory jumping and command aliasing for your terminal. Like `z` or `autojump`, but simpler.
+A blazingly fast terminal navigator and command aliasing tool, built with Python. `hop2` is designed to be simple, fast, and dependency-free, helping you move around your filesystem and run common commands instantly.
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![hop2 Demo Video](https://github.com/vishukamble/hop2/releases/download/v1.0.0/hop2_screen.png)](https://github.com/vishukamble/hop2/releases/download/v1.0.0/demo_video.mp4)
+
+[**hop2.tech**](https://hop2.tech)
+
 [![Build Status](https://img.shields.io/github/actions/workflow/status/vishukamble/hop2/ci.yml?branch=main&label=build&logo=github)](https://github.com/vishukamble/hop2/actions)
+[![GitHub Stars](https://img.shields.io/github/stars/vishukamble/hop2?style=social)](https://github.com/vishukamble/hop2)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
----
-
-## Table of Contents
-
-- [Why hop2?](#why-hop2)
-- [Features](#features)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Directory Shortcuts](#directory-shortcuts)
-  - [Command Shortcuts](#command-shortcuts)
-- [Real-world Examples](#real-world-examples)
-- [Tips & Gotchas](#tips--gotchas)
-- [PowerShell Support (Coming Soon)](#powershell-support-coming-soon)
-- [Contributing](#contributing)
-- [License](#license)
-
----
-
-## Why hop2?
-
-Ever been 6 folders deep and need to jump somewhere else? Or tired of typing long commands over and over?
-
-```bash
-# Instead of: cd ../../../../../other-project/src
-hop2 src
-
-# Instead of: kubectl delete pod my-pod-name
-hop2 kdp my-pod-name
-```
 
 ---
 
 ## Features
 
-- **Directory shortcuts**: Jump to any directory from anywhere
-- **Command aliases**: Create shortcuts for long commands
-- **Zero dependencies**: Just Python 3 and SQLite
-- **Shell integration**: Works with bash & zsh (PowerShell coming soon)
-- **Simple**: No AI, no fuzzy matching—just aliases you control
+-   **📁 Directory Shortcuts:** Save any directory with a short alias and hop to it from anywhere.
+-   **⚡ Command Aliases:** Create powerful shortcuts for long, complex commands.
+-   **🚀 Blazingly Fast:** Written in Python with a lightweight SQLite database for instant lookups.
+-   **✨ Zero Dependencies:** Works out-of-the-box with just Python 3.
+-   **🐧 Simple & Predictable:** No fuzzy matching or AI. Just simple, explicit aliases that work every time.
+-   **🐚 Multi-Shell Support:** Works seamlessly with `bash` and `zsh`.
 
 ---
 
-## Installation
+## 🚀 Installation
+
+Installation is a single command. The script will automatically detect your shell and set everything up.
 
 ```bash
-# 1. Install hop2
-curl -sL [https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh](https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh) | bash
+curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh | bash
+```
 
-# 2. Enable shell integration
-echo 'source ~/.hop2/init.sh' >> ~/.bashrc   # or ~/.zshrc
+After the installation, you just need to **reload your shell** for the changes to take effect:
+
+```bash
+# For Bash
 source ~/.bashrc
+
+# For Zsh
+source ~/.zshrc
 ```
 
 ---
 
-## Usage
+## 📖 Usage Guide
 
-### Directory Shortcuts
+``` Directory Shortcuts
+
+The core of `hop2` is making directory navigation instant.
 
 ```bash
-# Add current directory with an alias
-hop2 add project
+# Go to a deep directory and save it with an alias
+cd ~/work/projects/backend/api/controllers
+hop2 add controllers
 
-# Add specific directory
-hop2 add docs ~/Documents/important-docs
+# Go to another project
+cd ~/work/dev/company/products/web/frontend/src/components/shared/buttons
+hop2 add buttons
 
-# Jump to a directory (from anywhere!)
-hop2 project
-# or even shorter:
-h project
-
-# List all shortcuts
-hop2 list
+# Now, from anywhere, hop back instantly using the 'h' command
+cd ~
+h controllers  # You are now in the backend controllers directory
+h buttons      # You are now in the frontend buttons directory
 ```
 
-### Command Shortcuts
+``` Command Shortcuts
+
+Stop typing long commands over and over.
 
 ```bash
-# Create a command alias
-hop2 cmd kdp "kubectl delete pod"
-hop2 cmd gs "git status"
-hop2 cmd build "npm run build && npm test"
+# Create an alias for a complex git log command
+hop2 cmd glog "git log --oneline --graph --all --decorate"
 
-# Use it
-hop2 kdp my-pod-name
-hop2 gs
-hop2 build
+# Use it anywhere
+h my-project-repo
+hop2 glog
+
+# Create an alias to find the 10 largest files
+hop2 cmd bigfiles "find . -type f -printf '%s %p\n' | sort -nr | head -n 10"
+hop2 bigfiles
 ```
 
----
+``` Managing Your Shortcuts
 
-## Real-world Examples
+-   **List all shortcuts:** See everything you've saved with a clean, formatted table.
+    ```bash
+    hop2 list
+    ```
+-   **Remove a shortcut:**
+    ```bash
+    hop2 rm buttons
+    ```
 
-```bash
-# Save your most-used workspaces
-cd ~/work/frontend/src/components
-hop2 add frontend
+``` Updating & Uninstalling
 
-cd ~/work/backend/api/handlers
-hop2 add backend
-
-cd ~/work/infrastructure/kubernetes
-hop2 add k8s
-
-# Now hop around instantly:
-h frontend   # you’re in frontend components
-h backend    # you’re in backend handlers
-h k8s        # you’re in kubernetes configs
-
-# Common commands
-hop2 cmd dc "docker-compose"
-hop2 cmd k "kubectl"
-hop2 cmd tf "terraform"
-
-hop2 dc up -d
-hop2 k get pods
-hop2 tf plan
-```
-
----
-
-## Tips & Gotchas
-
-- **Unique aliases**: Directory and command aliases share the same namespace.
-- **Backup & restore**: Your shortcuts live in `~/.hop2/hop2.db`. Back it up to migrate.
-- **Security**: Command aliases run exactly what you type—avoid untrusted inputs.
-
----
-
-## PowerShell Support (Coming Soon)
-
-```powershell
-# In your PowerShell profile:
-# Add support so that `hop2 project` does the same cd behavior.
-```
+-   **Update to the latest version:**
+    ```bash
+    hop2 --update
+    ```
+-   **Uninstall `hop2` completely:** This removes the executable, all data, and cleans up your shell configuration file automatically.
+    ```bash
+    hop2 --uninstall
+    ```
 
 ---
 
 ## Contributing
 
-We love PRs! Good first issues:
-
-- Bug fixes & docs improvements
-- PowerShell integration
-- Enhanced shell completions
-
-Please avoid:
-
-- External dependencies
-- Fuzzy-matching features (other tools excel at that)
-- Over-engineering the core simplicity
-
----
+We love PRs and suggestions! This project is intentionally kept simple. Good first issues include bug fixes, documentation improvements, or adding support for other shells like `fish`.
 
 ## License
 
-This project is licensed under the **MIT License**. See [LICENSE](LICENSE) for details.
-
----
-
-Because sometimes you just want to `hop2` where you’re going.
+This project is licensed under the **MIT License**.
