@@ -31,7 +31,7 @@ A blazingly fast terminal navigator and command aliasing tool, built with Python
 Installation is a single command. The script will automatically detect your shell and set everything up.
 
 ```bash
-curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh | bash
+curl -sL install.hop2.tech | bash
 ```
 
 After the installation, you just need to **reload your shell** for the changes to take effect:
