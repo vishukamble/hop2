@@ -2,7 +2,7 @@
 # hop2 installer script
 set -e
 
-# ——— HEADER (Penguin Hop) ————————————————————————————————————————
+# --- HEADER ---
 cat <<'EOF'
                       .--.
                      |o_o |
@@ -17,58 +17,81 @@ cat <<'EOF'
    \_________________/               \______HOP2_______/
 ~~~~~~~~~~~~~~~~~~~~~~~~~~         ~~~~~~~~~~~~~~~~~~~~~~~~~~
 EOF
-# ——————————————————————————————————————————————————————————————————
+# ---
 echo "Installing hop2..."
 
-# (The rest of the script is the same)
 # 1) Ensure Python 3 is available
 if ! command -v python3 &> /dev/null; then
-    echo "Error: Python 3 is required but not installed." >&2
+    echo "❌ Error: Python 3 is required but not installed." >&2
     exit 1
 fi
 
 # 2) Pick install directory
-if [ -w "/usr/local/bin" ]; then
-    INSTALL_DIR="/usr/local/bin"
-elif [ -d "$HOME/.local/bin" ] && [ -w "$HOME/.local/bin" ]; then
+INSTALL_DIR=""
+if [ -d "$HOME/.local/bin" ] && [ -w "$HOME/.local/bin" ]; then
     INSTALL_DIR="$HOME/.local/bin"
-else
+elif [ -d "$HOME/bin" ] && [ -w "$HOME/bin" ]; then
     INSTALL_DIR="$HOME/bin"
-    mkdir -p "$INSTALL_DIR"
+elif [ -w "/usr/local/bin" ]; then
+    INSTALL_DIR="/usr/local/bin"
 fi
 
-# 3) Detect RC file
-if [ -n "$ZSH_VERSION" ]; then
-    HOP2_RC="$HOME/.zshrc"
-else
-    HOP2_RC="$HOME/.bashrc" # Default to bashrc
+if [ -z "$INSTALL_DIR" ]; then
+    echo "❌ Error: Could not find a writable directory in PATH. Please create one (e.g., mkdir -p ~/.local/bin) and add it to your PATH." >&2
+    exit 1
 fi
+mkdir -p "$INSTALL_DIR"
+
+
+# --- THIS IS THE CORRECTED LOGIC ---
+# 3) Detect the user's default shell to find the correct RC file
+if [[ "$SHELL" == *"zsh"* ]]; then
+    RC_FILE="$HOME/.zshrc"
+    PROFILE_FILE="$HOME/.zprofile"
+else
+    # Default to .bashrc for bash or any other shell
+    RC_FILE="$HOME/.bashrc"
+    PROFILE_FILE="$HOME/.bash_profile"
+fi
+# ---
 
 # 4) Prepare the ~/.hop2 directory and download files
 echo "✔️  Preparing environment in ~/.hop2"
 mkdir -p "$HOME/.hop2"
 
 echo "📥  Downloading hop2 core scripts..."
+# Use a temporary file for safety
+TMP_HOP2=$(mktemp)
+TMP_INIT=$(mktemp)
 if command -v curl &> /dev/null; then
-    curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/hop2.py -o /tmp/hop2
-    curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/init.sh -o "$HOME/.hop2/init.sh"
+    curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/hop2.py -o "$TMP_HOP2"
+    curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/init.sh -o "$TMP_INIT"
 else
-    echo "Error: curl is required for installation." >&2
+    echo "❌ Error: curl is required for installation." >&2
     exit 1
 fi
 
-# 5) Install the hop2 binary
-chmod +x /tmp/hop2
-mv /tmp/hop2 "$INSTALL_DIR/hop2"
+# 5) Install the hop2 binary and init script
+chmod +x "$TMP_HOP2"
+mv "$TMP_HOP2" "$INSTALL_DIR/hop2"
+mv "$TMP_INIT" "$HOME/.hop2/init.sh"
 echo "✅  hop2 installed successfully to $INSTALL_DIR/hop2"
 
-# 6) Ensure shell integration is sourced
-if ! grep -q "source ~/.hop2/init.sh" "$HOP2_RC"; then
-    echo "➕  Adding hop2 to your shell startup file ($HOP2_RC)"
-    echo -e "\n# hop2 shell integration\nsource ~/.hop2/init.sh" >> "$HOP2_RC"
+# 6) Ensure shell integration is sourced in the correct file
+SOURCE_LINE="source ~/.hop2/init.sh"
+if ! grep -q "$SOURCE_LINE" "$RC_FILE"; then
+    echo "➕  Adding hop2 to your shell startup file ($RC_FILE)"
+    echo -e "\n# hop2 shell integration\n$SOURCE_LINE" >> "$RC_FILE"
 fi
 
-# ——— FOOTER ——————————————————————————————————————————————————————
+# Also add to profile file for Zsh login shells on some systems (like macOS)
+if [[ "$SHELL" == *"zsh"* ]] && [ -f "$PROFILE_FILE" ] && ! grep -q "$SOURCE_LINE" "$PROFILE_FILE"; then
+    echo "➕  Adding hop2 to $PROFILE_FILE for compatibility"
+    echo -e "\n# hop2 shell integration\n$SOURCE_LINE" >> "$PROFILE_FILE"
+fi
+
+
+# --- FOOTER ---
 cat <<'EOF'
 
 🚀 Quick Start
@@ -88,4 +111,3 @@ cat <<'EOF'
 
 To remove hop2 later, just run: hop2 --uninstall
 EOF
-# ——————————————————————————————————————————————————————————————————
