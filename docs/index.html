@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Favicon -->
-    <link rel="icon" href="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-fav.svg" type="image/svg+xml">
+    <link rel="icon" href="assets/logos/hop2-fav.svg" type="image/svg+xml">
     <title>hop2 - Quick directory jumping for your terminal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrainsMono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+
     <style>
         :root {
             --bg: #0a0a0a;
@@ -33,8 +32,8 @@
             color: var(--fg);
             line-height: 1.6;
             overflow-x: hidden;
-            background-color: #0a0a0a; /* Fallback */
-            background-image: radial-gradient(circle at 10% 10%, #1a1a1a 0%, #0a0a0a 40%);
+             background-color: #0a0a0a; /* Fallback */
+             background-image: radial-gradient(circle at 10% 10%, #1a1a1a 0%, #0a0a0a 40%);
         }
 
         body::before {
@@ -65,51 +64,16 @@
             padding: 2rem;
         }
 
-        /* Header Specific Styles */
         header {
+            text-align: center;
             padding: 4rem 0 3rem;
             position: relative;
-            /* Flexbox for the new two-column layout */
-            display: flex;
-            flex-direction: column; /* Default to column on small screens */
-            align-items: center;
-            gap: 3rem; /* Space between left and right columns */
-        }
-
-        @media (min-width: 768px) { /* On medium screens and up, use two columns */
-            header {
-                flex-direction: row;
-                text-align: left;
-                padding-top: 6rem; /* More space for sticky nav */
-            }
-            .header-left {
-                flex: 1;
-                max-width: 50%; /* Adjust as needed */
-                text-align: left;
-            }
-            .header-right {
-                flex: 1;
-                max-width: 50%; /* Adjust as needed */
-            }
-        }
-
-        .logo-title-group {
-            display: flex;
-            align-items: center;
-            justify-content: center; /* Center on small screens */
-            margin-bottom: 1rem;
-            gap: 1rem;
-        }
-
-        @media (min-width: 768px) {
-            .logo-title-group {
-                justify-content: flex-start; /* Align left on larger screens */
-            }
         }
 
         .logo {
-            width: 80px; /* Smaller logo next to title */
-            height: 80px;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
             display: block;
             animation: fadeIn 1s forwards, float 3s ease-in-out infinite;
         }
@@ -122,38 +86,24 @@
         h1 {
             font-size: 4rem;
             font-weight: 700;
+            margin-bottom: 1rem;
             background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 0; /* Adjust margin as it's now part of a group */
         }
 
         .tagline {
             font-size: 1.25rem;
             color: #999;
             margin-bottom: 2rem;
-            text-align: center; /* Center on small screens */
-        }
-
-        @media (min-width: 768px) {
-            .tagline {
-                text-align: left; /* Align left on larger screens */
-            }
         }
 
         .badges {
             display: flex;
             gap: 1rem;
-            justify-content: center; /* Center on small screens */
+            justify-content: center;
             flex-wrap: wrap;
-            margin-bottom: 2rem;
-        }
-
-        @media (min-width: 768px) {
-            .badges {
-                justify-content: flex-start; /* Align left on larger screens */
-            }
         }
 
         .badge {
@@ -188,11 +138,6 @@
             overflow-x: auto;
             position: relative;
             max-width: 100%;
-        }
-
-        /* NEW: Set max-width to fit content for specific terminals */
-        .terminal.fit-content {
-            max-width: max-content;
         }
 
         .terminal::before {
@@ -283,18 +228,10 @@
             border: 1px solid var(--border);
             border-radius: 0.5rem;
             padding: 2rem;
-            /* NEW: Use max-content for width */
             max-width: max-content;
             margin: 2rem 0;
             overflow-x: auto;
         }
-        /* Center the installation-steps block */
-        .installation-steps-wrapper {
-            display: flex;
-            justify-content: center;
-            width: 100%;
-        }
-
 
         .step {
             margin: 1.5rem 0;
@@ -545,6 +482,8 @@
         }
 
         /* visitor styling */
+        /* Add this to your main <style> block */
+
         .footer-stats {
             display: inline-flex;
             align-items: center;
@@ -579,93 +518,47 @@
             display: block;
         }
 
-        /* Sticky Navigation */
-        .sticky-nav {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background-color: rgba(10, 10, 10, 0.95); /* Semi-transparent background */
-            backdrop-filter: blur(10px); /* Frosted glass effect */
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: center; /* Center nav items */
-            gap: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .sticky-nav a {
-            color: var(--fg);
-            text-decoration: none;
-            font-weight: 600;
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            transition: color 0.2s, background-color 0.2s;
-        }
-
-        .sticky-nav a:hover {
-            color: var(--accent);
-            background-color: rgba(0, 255, 136, 0.1);
-        }
-
-        /* Smooth scroll behavior */
-        html {
-            scroll-behavior: smooth;
-        }
-
     </style>
 </head>
 <body>
-    <!-- Sticky Navigation Menu -->
-    <nav class="sticky-nav">
-        <a href="#what-is-hop2">What is hop2?</a>
-        <a href="#features">Features</a>
-        <a href="#installation">Installation</a>
-        <a href="#quick-demo">Quick Demo</a>
-        <a href="#contribute">Contribute</a>
-    </nav>
-
     <div class="container">
         <header>
-            <div class="header-left text-center md:text-left">
-                <div class="greeting" id="greeting"></div>
-                <div class="logo-title-group">
-                    <img src="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-logo.svg" alt="hop2 logo" class="logo">
-                    <h1>hop2</h1>
+            <div class="greeting" id="greeting"></div>
+            <img src="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-logo.svg" alt="hop2 logo" class="logo">
+            <h1>hop2</h1>
+            <p class="tagline">Quick directory jumping and command aliasing for your terminal</p>
+            <div class="badges">
+                <div class="badge">
+                    <span>✨</span> Zero dependencies
                 </div>
-                <p class="tagline">Stop typing paths. Start hopping.</p>
-                <div class="badges">
-                    <div class="badge">
-                        <span>✨</span> Zero dependencies
-                    </div>
-                    <div class="badge">
-                        <span>🐍</span> Python 3 & SQLite
-                    </div>
-                    <div class="badge">
-                        <span>⚡</span> Lightning fast
-                    </div>
+                <div class="badge">
+                    <span>🐍</span> Python 3  SQLite
                 </div>
-                <div class="stats">
-                    <div class="stat-item">
-                        <span id="current-time"></span>
-                    </div>
+                <div class="badge">
+                    <span>⚡</span> Lightning fast
                 </div>
             </div>
-            <div class="header-right w-full md:w-1/2">
-                <div class="video-container">
-                    <video autoplay loop muted playsinline poster="https://github.com/vishukamble/hop2/releases/download/v1.0.0/hop2_screen.png">
-                        <source src="https://github.com/vishukamble/hop2/releases/download/v1.0.0/demo_video.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
+            <div class="stats">
+                <div class="stat-item">
+                    <span id="current-time"></span>
                 </div>
             </div>
         </header>
 
-        <section id="what-is-hop2" class="section demo demo-section">
+        <section class="section">
+            <div class="video-container">
+                <video autoplay loop muted playsinline poster="https://github.com/vishukamble/hop2/releases/download/v1.0.0/hop2_screen.png">
+                    <source src="https://github.com/vishukamble/hop2/releases/download/v1.0.0/demo_video.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </section>
+
+        <section class="section demo demo-section">
             <h2>What is hop2?</h2>
             <p>Ever been 6 folders deep and need to jump somewhere else? Tired of typing long commands over and over?</p>
 
-            <div class="terminal fit-content">
+            <div class="terminal">
                 <pre class="typing"><span class="comment"># Instead of this mess...</span>
 <span class="prompt">$</span> <span class="command">cd ../../../../../other-project/src</span>
 
@@ -673,7 +566,7 @@
 <span class="prompt">$</span> <span class="command">hop2 src</span></pre>
             </div>
 
-            <div class="terminal fit-content">
+            <div class="terminal">
                 <pre><span class="comment"># Instead of typing this every time...</span>
 <span class="prompt">$</span> <span class="command">kubectl delete pod my-app-pod-7b9c5d-xyz</span>
 <span class="comment"># Create a shortcut!</span>
@@ -681,7 +574,7 @@
             </div>
         </section>
 
-        <section id="features" class="section demo demo-section">
+        <section class="section demo demo-section">
             <h2>Features</h2>
             <div class="feature-grid">
                 <div class="feature">
@@ -703,48 +596,46 @@
             </div>
         </section>
 
-        <section id="installation" class="section demo demo-section">
+        <section class="section demo demo-section">
             <h2>Installation</h2>
-            <div class="installation-steps-wrapper">
-                <div class="installation-steps">
-                    <div class="step">
-                        <div class="step-number">1</div>
-                        <div>
-                            <p>Install hop2 with one command:</p>
-                            <div class="terminal">
-                                <button class="copy-btn" title="Copy to clipboard">📋</button>
-                                <pre><span class="prompt">$</span> <span class="command">curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh | bash</span></pre>
-                            </div>
+            <div class="installation-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <p>Install hop2 with one command:</p>
+                        <div class="terminal">
+                            <button class="copy-btn" title="Copy to clipboard">📋</button>
+                            <pre><span class="prompt">$</span> <span class="command">curl -sL https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh | bash</span></pre>
                         </div>
                     </div>
+                </div>
 
-                    <div class="step">
-                        <div class="step-number">2</div>
-                        <div>
-                            <p>Add to your shell configuration:</p>
-                            <div class="terminal">
-                                <button class="copy-btn" title="Copy to clipboard">📋</button>
-                                <pre><span class="prompt">$</span> <span class="command">source ~/.bashrc</span></pre>
-                            </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <p>Add to your shell configuration:</p>
+                        <div class="terminal">
+                            <button class="copy-btn" title="Copy to clipboard">📋</button>
+                            <pre><span class="prompt">$</span> <span class="command">source ~/.bashrc</span></pre>
                         </div>
                     </div>
+                </div>
 
-                    <div class="step">
-                        <div class="step-number">3</div>
-                        <div>
-                            <p>Start hopping!</p>
-                            <div class="terminal">
-                                <button class="copy-btn" title="Copy to clipboard">📋</button>
-                                <pre><span class="prompt">$</span> <span class="command">hop2 add project</span> <span class="comment"># Save current directory</span>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <p>Start hopping!</p>
+                        <div class="terminal">
+                            <button class="copy-btn" title="Copy to clipboard">📋</button>
+                            <pre><span class="prompt">$</span> <span class="command">hop2 add project</span> <span class="comment"># Save current directory</span>
 <span class="prompt">$</span> <span class="command">hop2 project</span>     <span class="comment"># Jump back anytime!</span></pre>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="quick-demo" class="section demo demo-section">
+        <section class="section demo demo-section">
             <h2>Quick Demo</h2>
             <div class="terminal">
                 <pre class="typing">
@@ -771,7 +662,7 @@
             </div>
         </section>
 
-        <section id="contribute" class="section contribute-section">
+        <section class="section contribute-section">
             <h2>🤝 Open Source & Community Driven</h2>
             <div class="contribute-grid">
                 <div class="contribute-card">
@@ -821,8 +712,10 @@
 
             <p class="ai">Vibe coded <span style="color: #ff5f57;">&lt;3</span></p>
         </footer>
+        </section>
     </div>
 <script>
+
   document.addEventListener('DOMContentLoaded', () => {
     const msgEl    = document.getElementById('commit-message');
     const authEl   = document.getElementById('commit-author');
