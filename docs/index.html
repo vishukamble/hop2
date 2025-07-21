@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Favicon -->
-    <link rel="icon" href="/assets/logos/hop2-fav.svg" type="image/svg+xml">
+    <link rel="icon" href="assets/logos/hop2-fav.svg" type="image/svg+xml">
     <title>hop2 - Quick directory jumping for your terminal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -553,8 +553,6 @@
                 </video>
             </div>
         </section>
-        <section class="section demo demo-section">
-            <h2>What is hop2?</h2>
 
         <section class="section demo demo-section">
             <h2>What is hop2?</h2>
@@ -819,32 +817,32 @@
   });
 
   // visitor
-  // Add this inside your existing <script> tag, after the other code
-
   function updateVisitorCount() {
-        // This creates a unique counter for your site.
-        // The API automatically creates it on the first visit.
-        const namespace = 'hop2.vishukamble.io';
-        const key = 'pageviews';
+    // The namespace can be your project name and the key can describe the count
+    const namespace = 'hop2-website';
+    const key = 'pageviews';
 
-        fetch(`https://api.countapi.xyz/hit/${namespace}/${key}`)
-            .then(res => res.json())
-            .then(data => {
-                const countElement = document.getElementById('visitor-count');
-                if (countElement) {
-                    // Formats the number with commas (e.g., 1,234)
-                    countElement.innerText = data.value.toLocaleString('en-US');
-                }
-            })
-            .catch(error => {
-                // If the API fails, it will just show '...'
-                console.error("Visitor count failed:", error);
-            });
-  }
+    fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`)
+        .then(res => res.json())
+        .then(data => {
+            const countElement = document.getElementById('visitor-count');
+            if (countElement) {
+                // Note: This API returns 'data.count' instead of 'data.value'
+                countElement.innerText = data.count.toLocaleString('en-US');
+            }
+        })
+        .catch(error => {
+            console.error("Visitor count failed:", error);
+            // If the API fails, it will just show '...'
+            const countElement = document.getElementById('visitor-count');
+            if (countElement) {
+                countElement.innerText = 'N/A';
+            }
+        });
+}
 
     // Call the function when the page loads
-  updateVisitorCount();
-
+    updateVisitorCount();
 </script>
 
 </body>
