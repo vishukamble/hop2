@@ -818,7 +818,7 @@
   // visitor
   function updateVisitorCount() {
     const namespace = 'hop2-website';
-    const key = 'pageviews';
+    const key = 'count';
 
     fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`)
         .then(res => res.json())
