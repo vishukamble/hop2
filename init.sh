@@ -42,11 +42,12 @@ hop2() {
 
 # Shorter alias 'h' for jumping (or listing)
 h() {
+    # If no arguments are given, run the list command
     if [ -z "$1" ]; then
         hop2 list
     else
-        # Just call the main hop2 function, it knows what to do
-        hop2 "$1"
+        # Otherwise, pass ALL arguments to the main hop2 function
+        hop2 "$@"
     fi
 }
 
