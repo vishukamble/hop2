@@ -616,8 +616,7 @@
                         <p>Add to your shell configuration:</p>
                         <div class="terminal">
                             <button class="copy-btn" title="Copy to clipboard">📋</button>
-                            <pre><span class="prompt">$</span> <span class="command">echo 'source ~/.hop2/init.sh' >> ~/.bashrc</span>
-<span class="prompt">$</span> <span class="command">source ~/.bashrc</span></pre>
+                            <pre><span class="prompt">$</span> <span class="command">source ~/.bashrc</span></pre>
                         </div>
                     </div>
                 </div>
@@ -781,20 +780,44 @@
   setInterval(updateTime, 1000);
 
   document.querySelectorAll('.copy-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const pre = button.closest('.terminal').querySelector('pre');
-            const text = pre.innerText;
+    button.addEventListener('click', async () => { // Made the function async
+        const pre = button.closest('.terminal').querySelector('pre');
+        let text = pre.innerText; // Get the raw text
 
-            navigator.clipboard.writeText(text).then(() => {
-                button.innerText = '✅';
-                button.classList.add('copied');
-                setTimeout(() => {
-                    button.innerText = '📋';
-                    button.classList.remove('copied');
-                }, 2000);
-            });
-        });
+        // Remove a leading '$' followed by optional whitespace
+        // This regex ensures it only targets the shell prompt '$ '
+        text = text.replace(/^\$\s*/, '');
+
+        try {
+            // Use the modern Clipboard API
+            await navigator.clipboard.writeText(text);
+
+            button.innerText = '✅';
+            button.classList.add('copied');
+            setTimeout(() => {
+                button.innerText = '📋';
+                button.classList.remove('copied');
+            }, 2000);
+        } catch (err) {
+            console.error('Error copying text to clipboard:', err);
+            // Fallback for visual feedback if copy fails
+            button.innerText = '❌';
+            setTimeout(() => {
+                button.innerText = '📋';
+            }, 2000);
+
+            // Provide a message to the user if the Clipboard API is not available or if permission is denied.
+            if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
+                console.warn('Clipboard write access denied. User might need to grant permission or browser might restrict it.');
+                // You could add a more visible message to the UI here if needed
+            } else if (err.name === 'TypeError') {
+                console.warn('Clipboard API not supported in this browser or context. Falling back to manual copy suggestion.');
+                // You could offer a manual copy instruction here
+            }
+        }
     });
+  });
+
 
   const animatedSections = document.querySelectorAll('.demo-section');
 
