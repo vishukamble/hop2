@@ -776,7 +776,6 @@
     document.getElementById('current-time').textContent = `${city} • ${formatted}`;
   }
 
-  // Initialize greeting and live-updating time
   document.getElementById('greeting').textContent = getGreeting() + ', developer!';
   updateTime();
   setInterval(updateTime, 1000);
@@ -818,7 +817,6 @@
 
   // visitor
   function updateVisitorCount() {
-    // The namespace can be your project name and the key can describe the count
     const namespace = 'hop2-website';
     const key = 'pageviews';
 
@@ -841,7 +839,6 @@
         });
 }
 
-    // Call the function when the page loads
     updateVisitorCount();
 </script>
 
