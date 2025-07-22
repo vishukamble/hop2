@@ -829,6 +829,43 @@
     </div>
 </section>
 
+<section id="why" class="section features-section">
+    <div class="fade-in">
+        <div class="section-header">
+            <h2>Why Choose hop2?</h2>
+            <p>Designed for a faster, more organized workflow.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">🗃️</span>
+                <h3>Centralized Storage</h3>
+                <p>Manage all your directory and command shortcuts in a single, portable database file.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🐚</span>
+                <h3>Cross-Shell Support</h3>
+                <p>Works out of the box in bash, zsh, and other popular shells on Linux & macOS.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">💨</span>
+                <h3>No Reloads Needed</h3>
+                <p>Add or remove shortcuts instantly. Your changes are available in all open terminal sessions without
+                    re-sourcing.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🖇️</span>
+                <h3>Powerful Aliases</h3>
+                <p>Create shortcuts not just for directories, but for full commands with arguments as well.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
 <!-- Features Section -->
 <section id="features" class="section features-section">
     <div class="fade-in">
@@ -975,6 +1012,8 @@
             <a href="https://github.com/vishukamble/hop2/blob/main/LICENSE" target="_blank"
                style="color: #999; text-decoration: none;">MIT
                 License</a>
+            .
+            <span style="color: #999;">Visitors: <span id="visitor-count">...</span></span>
         </p>
     </div>
 </section>
@@ -983,6 +1022,7 @@
     <ul>
         <li><a href="#hero"></a></li>
         <li><a href="#demo"></a></li>
+        <li><a href="#why"></a></li>
         <li><a href="#features"></a></li>
         <li><a href="#install"></a></li>
         <li><a href="#community"></a></li>
@@ -1177,6 +1217,28 @@
             }
         });
     });
+
+    function updateVisitorCount() {
+        const namespace = 'hop2-website';
+        const key = 'count';
+
+        fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`)
+            .then(res => res.json())
+            .then(data => {
+                const countElement = document.getElementById('visitor-count');
+                if (countElement) {
+                    countElement.innerText = data.count.toLocaleString('en-US');
+                }
+            })
+            .catch(error => {
+                console.error("Visitor count failed:", error);
+                const countElement = document.getElementById('visitor-count');
+                if (countElement) {
+                    countElement.innerText = 'N/A';
+                }
+            });
+    }
+
 </script>
 
 <a href="#hero" class="scroll-to-top">^</a>
