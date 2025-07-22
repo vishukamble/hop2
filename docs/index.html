@@ -3,27 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Favicon -->
-    <link rel="icon" href="assets/logos/hop2-fav.svg" type="image/svg+xml">
+    <link rel="icon" href="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-fav.svg"
+          type="image/svg+xml">
     <title>hop2 - Quick directory jumping for your terminal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrainsMono:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;600;700;900&display=swap"
+          rel="stylesheet">
 
     <style>
-        :root {
-            --bg: #0a0a0a;
-            --fg: #e1e1e1;
-            --accent: #00ff88;
-            --accent-dim: #00cc6a;
-            --code-bg: #1a1a1a;
-            --border: #2a2a2a;
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a0a0a;
+            --fg: #e1e1e1;
+            --accent: #00ff88;
+            --accent-glow: rgba(0, 255, 136, 0.4);
+            --code-bg: #1a1a1a;
+            --border: #2a2a2a;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scroll-snap-type: y mandatory;
         }
 
         body {
@@ -32,484 +38,103 @@
             color: var(--fg);
             line-height: 1.6;
             overflow-x: hidden;
-             background-color: #0a0a0a; /* Fallback */
-             background-image: radial-gradient(circle at 10% 10%, #1a1a1a 0%, #0a0a0a 40%);
+            cursor: none;
         }
 
-        body::before {
-            content: '';
+        main {
+            flex: 1;
+        }
+
+        /* Custom cursor */
+        body, a, button {
+            cursor: none;
+        }
+
+        .custom-cursor {
             position: fixed;
-            top: 20%;
-            left: 20%;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(0, 255, 136, 0.15) 0%, rgba(0, 255, 136, 0) 70%);
-            filter: blur(100px);
-            z-index: -1;
-            animation: move-aurora 15s infinite alternate;
-        }
-
-        @keyframes move-aurora {
-            from {
-                transform: translate(-20%, -20%) rotate(0deg);
-            }
-            to {
-                transform: translate(20%, 20%) rotate(360deg);
-            }
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        header {
-            text-align: center;
-            padding: 4rem 0 3rem;
-            position: relative;
-        }
-
-        .logo {
-            width: 120px;
-            height: 120px;
-            margin: 0 auto 1rem;
-            display: block;
-            animation: fadeIn 1s forwards, float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        h1 {
-            font-size: 4rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dim) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .tagline {
-            font-size: 1.25rem;
-            color: #999;
-            margin-bottom: 2rem;
-        }
-
-        .badges {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            background: var(--code-bg);
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid var(--border);
-            font-size: 0.875rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .section {
-            margin: 4rem 0;
-        }
-
-        h2 {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            color: var(--accent);
-        }
-
-        .terminal {
-            background: var(--code-bg);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            padding: 1.5rem;
-            margin: 1rem 0;
+            z-index: 9999;
+            pointer-events: none;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.875rem;
-            overflow-x: auto;
-            position: relative;
-            max-width: 100%;
-        }
-
-        .terminal::before {
-          content: '';
-          position: absolute;
-          top: 0.75rem;
-          left: 1rem;
-          width: 0.75rem;
-          height: 0.75rem;
-          border-radius: 50%;
-          background: #ff5f57;                     /* red “close” */
-          box-shadow:
-            1.2rem 0 0 0 #ffbd2e,                  /* yellow “minimize” */
-            2.4rem 0 0 0 #28c93f;                  /* green “zoom” */
-        }
-
-        .terminal pre {
-            margin-top: 1rem;
-        }
-
-        code {
-            font-family: 'JetBrains Mono', monospace;
-            background: var(--code-bg);
-            padding: 0.2rem 0.4rem;
-            border-radius: 0.25rem;
-            font-size: 0.875rem;
-        }
-
-        .comment {
-            color: #666;
-        }
-
-        .prompt {
-            color: var(--accent);
-        }
-
-        .command {
-            color: #fff;
-        }
-
-        .output {
-            color: #999;
-        }
-
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 2rem;
-            margin: 2rem 0;
-        }
-
-        @media (max-width: 768px) {
-            .feature-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-        }
-
-        .feature {
-            background: var(--code-bg);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            padding: 2rem;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-
-        .feature:hover {
-            transform: translateY(-2px);
-            border-color: var(--accent);
-        }
-
-        .feature h3 {
-            color: var(--accent);
-            margin-bottom: 1rem;
             font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .feature p {
-            line-height: 1.7;
-            color: #ccc;
-        }
-
-        .installation-steps {
-            background: var(--code-bg);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            padding: 2rem;
-            max-width: 100%;
-            margin: 2rem 0;
-            overflow-x: auto;
-        }
-
-        .step {
-            margin: 1.5rem 0;
-            display: flex;
-            gap: 1rem;
-            align-items: flex-start;
-        }
-
-        .step-number {
-            background: var(--accent);
-            color: var(--bg);
-            width: 2rem;
-            height: 2rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-weight: bold;
-            flex-shrink: 0;
-        }
-
-        .greeting {
-            font-size: 1.1rem;
             color: var(--accent);
-            margin-bottom: 1rem;
-            opacity: 0;
-            animation: fadeIn 1s forwards;
+            transition: transform 0.2s ease;
         }
 
-        @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
-        }
-
-        .stats {
-            display: flex;
-            gap: 2rem;
-            justify-content: center;
-            margin-top: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .stat-item {
+        /* Full-height sections */
+        .section {
+            min-height: 100vh;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-            color: #999;
-        }
-
-        #current-time {
-            font-family: 'JetBrains Mono', monospace;
-            color: var(--accent);
-        }
-
-        #visitor-count img {
-            height: 28px;
-            border-radius: 4px;
-        }
-
-        .cta {
-            text-align: center;
-            margin: 4rem 0;
-        }
-
-        .button {
-            display: inline-block;
-            background: var(--accent);
-            color: var(--bg);
-            padding: 1rem 2rem;
-            border-radius: 0.5rem;
-            text-decoration: none;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0, 255, 136, 0.3);
-        }
-
-        .demo {
+            justify-content: center;
             position: relative;
-            margin: 2rem 0;
+            scroll-snap-align: start;
+            padding: 2rem;
         }
 
-        @keyframes type {
-          from { width: 0; }
-          to   { width: 100%; }
-        }
-        @keyframes blink {
-          50% { border-color: transparent; }
-        }
-
-        .typing {
-          overflow: hidden;
-          border-right: 2px solid var(--accent);
-          animation:
-            type 2s steps(30,end) forwards,
-            blink 0.7s step-start 2s infinite;
+        /* Hero Section */
+        .hero {
+            background: radial-gradient(ellipse at top left, #1a1a1a 0%, #0a0a0a 100%);
+            position: relative;
+            overflow: hidden;
         }
 
-        .contribute-section {
+        .hero-container {
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 4rem;
+            align-items: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            top: -300px;
+            left: -200px;
+            filter: blur(100px);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 0.5;
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                opacity: 0.8;
+                transform: translateX(-50%) scale(1.1);
+            }
+        }
+
+        .hero-content {
+            z-index: 1;
+            position: relative;
+        }
+
+        .video-container {
+            margin-top: 3rem;
+            position: relative;
+            z-index: 1;
+            border-radius: 16px;
+            overflow: hidden;
             background: var(--code-bg);
             border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            padding: 3rem;
-            margin: 4rem 0;
-        }
-
-        .contribute-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 0;
-        }
-        @media (max-width: 768px) {
-          .contribute-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        .contribute-card {
-            text-align: center;
-            min-width: 0;
-            /* Force every card to be as tall as the tallest one */
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 1.5rem;
-        }
-        /* horizontal divider under first row */
-        .contribute-card:nth-child(1),
-        .contribute-card:nth-child(2) {
-          border-bottom: 1px solid #444;
-        }
-        /* vertical divider after first column */
-        .contribute-card:nth-child(1),
-        .contribute-card:nth-child(3) {
-          border-right: 1px solid #444;
-        }
-
-        .contribute-card h3 {
-            color: var(--accent);
-            margin-bottom: 1rem;
-            font-size: 1.25rem;
-        }
-
-        .contribute-card p {
-            margin-bottom: 1rem;
-            color: #ccc;
-        }
-
-        .contribute-note {
-            margin-top: 2rem;
-            padding-top: 2rem;
-            border-top: 1px solid var(--border);
-            text-align: center;
-            color: #999;
-        }
-
-        .button-outline {
-            background: transparent;
-            border: 2px solid var(--accent);
-            color: var(--accent);
-            margin-left: 1rem;
-        }
-
-        .button-outline:hover {
-            background: var(--accent);
-            color: var(--bg);
-        }
-
-        footer {
-            text-align: center;
-            padding: 3rem 0;
-            color: #666;
-            border-top: 1px solid var(--border);
-            margin-top: 6rem;
-        }
-
-        .footer-links {
-            margin-top: 1rem;
-        }
-
-        .footer-links a {
-            color: #999;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-
-        .footer-links a:hover {
-            color: var(--accent);
-        }
-
-        .ai {
-            margin-top: 1.5rem;
-            font-size: 0.875rem;
-            color: #666;
-        }
-
-        .ai a {
-            color: var(--accent);
-            text-decoration: none;
-            transition: opacity 0.2s;
-        }
-
-        .ai a:hover {
-            opacity: 0.8;
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 3rem;
-            }
-
-            .container {
-                padding: 1rem;
-            }
-
-            .button-outline {
-                display: block;
-                margin: 1rem 0;
-            }
-        }
-
-        .copy-btn {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            background: #333;
-            border: 1px solid var(--border);
-            color: var(--fg);
-            cursor: pointer;
-            padding: 0.3rem 0.5rem;
-            border-radius: 4px;
-            opacity: 0.5;
-            transition: opacity 0.2s, background 0.2s;
-        }
-        .copy-btn:hover {
-            opacity: 1;
-            background: var(--accent-dim);
-        }
-        .copy-btn.copied {
-            background: var(--accent);
-            color: var(--bg);
-        }
-
-        /* visitor styling */
-        /* Add this to your main <style> block */
-
-        .footer-stats {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 1rem;
-            background-color: var(--code-bg);
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            color: #999;
-            font-size: 0.875rem;
-            margin: 2rem 0 1rem;
-        }
-
-        #visitor-count {
-            font-weight: bold;
-            color: var(--accent);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* Demo Video */
-        .video-container {
-            border: 1px solid var(--border);
-            border-radius: 0.5rem;
-            overflow: hidden; /* Ensures the video corners are also rounded */
-            line-height: 0;   /* Removes any extra space below the video */
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
 
         .video-container video {
@@ -518,352 +143,1019 @@
             display: block;
         }
 
+        @media (max-width: 968px) {
+            .video-container {
+                margin-top: 3rem;
+            }
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 2rem;
+            display: block;
+            filter: drop-shadow(0 0 30px var(--accent-glow));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(5deg);
+            }
+        }
+
+        h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--accent) 0%, #00cc6a 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
+        }
+
+        .tagline {
+            font-size: 1.5rem;
+            color: #999;
+            margin-bottom: 3rem;
+            opacity: 0;
+            animation: fadeInUp 1s 0.5s forwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fadeInUp 1s 0.7s forwards;
+        }
+
+        h3 {
+            padding-bottom: 0.5rem;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 1.25rem 3rem;
+            background: var(--accent);
+            color: var(--bg);
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            cursor: pointer;
+            margin-top: 0.8rem;
+        }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px var(--accent-glow);
+        }
+
+        .button-outline {
+            background: transparent;
+            border: 2px solid var(--accent);
+            color: var(--accent);
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            40% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+            60% {
+                transform: translateX(-50%) translateY(-5px);
+            }
+        }
+
+        .scroll-indicator svg {
+            width: 30px;
+            height: 30px;
+            fill: var(--accent);
+            opacity: 0.6;
+        }
+
+        /* Demo Section */
+        .demo-section {
+            background: linear-gradient(180deg, #0a0a0a 0%, #0f0f0f 100%);
+        }
+
+        .demo-content {
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-header h2 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 1rem;
+            color: var(--accent);
+        }
+
+        .terminal-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .terminal {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-width: 400px;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: #333;
+            border: 1px solid var(--border);
+            color: var(--fg);
+            cursor: pointer;
+            padding: 0.3rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            opacity: 0;
+            transition: opacity 0.2s, background 0.2s, transform 0.1s;
+            z-index: 10;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .terminal.copyable:hover .copy-btn {
+            opacity: 1;
+        }
+
+        .copy-btn:hover {
+            background: var(--accent);
+            color: var(--bg);
+            transform: scale(1.05);
+        }
+
+        .copy-btn.copied {
+            background: var(--accent);
+            color: var(--bg);
+            opacity: 1;
+        }
+
+        .terminal:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border-color: var(--accent);
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: 0.75rem;
+            left: 1rem;
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+            background: #ff5f57;
+            box-shadow: 1.2rem 0 0 0 #ffbd2e, 2.4rem 0 0 0 #28c93f;
+        }
+
+        .terminal pre {
+            margin-top: 1.5rem;
+            white-space: pre-wrap;
+        }
+
+        .prompt {
+            color: var(--accent);
+        }
+
+        .command {
+            font-weight: 600;
+            color: #e6ffe6;
+        }
+
+        .comment {
+            color: #888;
+            font-style: italic;
+        }
+
+        /* Features Section */
+        .features-section {
+            background: #0a0a0a;
+            position: relative;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+        }
+
+        .feature-card {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .feature-card:hover::before {
+            opacity: 0.1;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--accent);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .feature-card h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        /* Installation Section */
+        .install-section {
+            background: linear-gradient(180deg, #0f0f0f 0%, #0a0a0a 100%);
+        }
+
+        .install-steps {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .step {
+            background: var(--code-bg);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            transition: all 0.3s ease;
+            min-height: 280px;
+        }
+
+        .step:hover {
+            border-color: var(--accent);
+            transform: translateX(10px);
+        }
+
+        .step-number {
+            background: var(--accent);
+            color: var(--bg);
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        /* Community Section */
+        .community-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            scroll-snap-align: start;
+            padding: 2rem;
+            background: #0a0a0a;
+            text-align: center;
+        }
+
+        .community-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 3rem auto;
+        }
+
+        @media (max-width: 768px) {
+            .community-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+        }
+
+        .community-card {
+            background: var(--code-bg);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 3rem 2.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .community-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .community-card h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 2rem 0;
+            text-align: center;
+            background: #050505;
+            position: relative;
+            z-index: 10;
+            border-top: 1px solid #333;
+            margin-top: 3rem;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .community-grid {
+                grid-template-columns: 1fr;
+            }
+
+            footer .footer-content {
+                text-align: center;
+                font-size: 0.9rem;
+            }
+
+            body {
+                cursor: auto;
+                display: flex;
+                flex-direction: column;
+                min-height: 100vh;
+            }
+
+            .section {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 3rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+
+            .button {
+                width: 100%;
+            }
+
+            .cursor, .cursor-dot {
+                display: none;
+            }
+        }
+
+        .community-section .fade-in {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            /*height: 90%;*/
+            flex-grow: 1; /* This is the key: it tells the container to expand */
+            justify-content: center; /* This centers the main content vertically */
+        }
+
+
+        /* Update the section-footer rule */
+        .section-footer {
+            width: 100%;
+            margin-top: auto;
+            padding-top: 3rem;
+            padding-bottom: 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Loading animation */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* dot navigation styling */
+        .dot-nav {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+        }
+
+        .dot-nav ul {
+            list-style: none;
+        }
+
+        .dot-nav li {
+            margin: 2rem 0;
+        }
+
+        .dot-nav a {
+            display: block;
+            position: relative;
+            padding: 10px;
+            cursor: none;
+        }
+
+        /* This pseudo-element is the VISIBLE dot */
+        .dot-nav a::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: transparent;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        /* This styles the VISIBLE dot on hover/active */
+        .dot-nav a:hover::before,
+        .dot-nav a.active::before {
+            background: var(--accent);
+            transform: translate(-50%, -50%) scale(1.2);
+            border-color: var(--accent);
+        }
+
+        .latest-commit-info {
+            margin-top: 3rem;
+            text-align: center;
+        }
+
+        .latest-commit-info a {
+            color: #888;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .latest-commit-info a:hover {
+            color: var(--accent);
+        }
+
+        #commit-icon {
+            display: inline-block;
+            transition: transform 0.5s ease;
+        }
+
+        .latest-commit-info a:hover #commit-icon {
+            transform: rotate(360deg);
+        }
+
+        .scroll-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--accent);
+            color: var(--bg);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .scroll-to-top.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="greeting" id="greeting"></div>
-            <img src="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-logo.svg" alt="hop2 logo" class="logo">
+
+<!-- Custom cursor -->
+<div class="custom-cursor">></div>
+
+<!-- Hero Section -->
+<section id="hero" class="section hero">
+    <div class="hero-container">
+        <div class="hero-content">
+            <img src="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-logo.svg" alt="hop2"
+                 class="logo">
             <h1>hop2</h1>
-            <p class="tagline">Quick directory jumping and command aliasing for your terminal</p>
-            <div class="badges">
-                <div class="badge">
-                    <span>✨</span> Zero dependencies
-                </div>
-                <div class="badge">
-                    <span>🐍</span> Python 3  SQLite
-                </div>
-                <div class="badge">
-                    <span>⚡</span> Lightning fast
-                </div>
+            <p class="tagline">Jump anywhere. Run anything. Stay in flow.</p>
+            <div class="cta-buttons">
+                <a href="#demo" class="button">See it in action</a>
+                <a href="https://github.com/vishukamble/hop2" target="_blank" class="button button-outline">View on
+                    GitHub</a>
             </div>
-            <div class="stats">
-                <div class="stat-item">
-                    <span id="current-time"></span>
-                </div>
-            </div>
-        </header>
+        </div>
+        <div class="video-container">
+            <video autoplay loop muted playsinline
+                   poster="https://github.com/vishukamble/hop2/releases/download/v1.0.0/hop2_screen.png">
+                <source src="https://github.com/vishukamble/hop2/releases/download/v1.0.0/demo_video.mp4"
+                        type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+    <div class="scroll-indicator">
+        <svg viewBox="0 0 24 24">
+            <path d="M7 10l5 5 5-5z"/>
+        </svg>
+    </div>
+</section>
 
-        <section class="section">
-            <div class="video-container">
-                <video autoplay loop muted playsinline poster="https://github.com/vishukamble/hop2/releases/download/v1.0.0/hop2_screen.png">
-                    <source src="https://github.com/vishukamble/hop2/releases/download/v1.0.0/demo_video.mp4" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
-            </div>
-        </section>
+<!-- Demo Section -->
+<section id="demo" class="section demo-section">
+    <div class="demo-content fade-in">
+        <div class="section-header">
+            <h2>Terminal Navigation, Reimagined</h2>
+            <p>Stop typing long paths. Start hopping.</p>
+        </div>
 
-        <section class="section demo demo-section">
-            <h2>What is hop2?</h2>
-            <p>Ever been 6 folders deep and need to jump somewhere else? Tired of typing long commands over and over?</p>
+        <div class="terminal-showcase">
+            <div class="terminal">
+                <button title="Copy to clipboard">📋</button>
+                <pre><span class="comment"># Old way: Navigate through directories</span>
+<span class="prompt">$</span> <span class="command">cd ../../../projects/frontend/src</span>
+<span class="prompt">$</span> <span class="command">cd components/ui/buttons</span>
+
+<span class="comment"># hop2 way: Jump directly</span>
+<span class="prompt">$</span> <span class="command">hop2 buttons</span>
+<span class="comment">✨ You're there!</span></pre>
+            </div>
 
             <div class="terminal">
-                <pre class="typing"><span class="comment"># Instead of this mess...</span>
-<span class="prompt">$</span> <span class="command">cd ../../../../../other-project/src</span>
-
-<span class="comment"># Just hop!</span>
-<span class="prompt">$</span> <span class="command">hop2 src</span></pre>
-            </div>
-
-            <div class="terminal">
-                <pre><span class="comment"># Instead of typing this every time...</span>
-<span class="prompt">$</span> <span class="command">kubectl delete pod my-app-pod-7b9c5d-xyz</span>
-<span class="comment"># Create a shortcut!</span>
-<span class="prompt">$</span> <span class="command">hop2 kdp my-app-pod-7b9c5d-xyz</span></pre>
-            </div>
-        </section>
-
-        <section class="section demo demo-section">
-            <h2>Features</h2>
-            <div class="feature-grid">
-                <div class="feature">
-                    <h3>📁 Directory Shortcuts</h3>
-                    <p>Jump to any directory from anywhere with simple aliases you create.</p>
-                </div>
-                <div class="feature">
-                    <h3>⚡ Command Aliases</h3>
-                    <p>Create shortcuts for long commands and run them with arguments.</p>
-                </div>
-                <div class="feature">
-                    <h3>🔧 Simple & Fast</h3>
-                    <p>No AI, no fuzzy matching. Just simple aliases that work exactly as you expect.</p>
-                </div>
-                <div class="feature">
-                    <h3>🐚 Shell Integration</h3>
-                    <p>Works seamlessly with bash and zsh. PowerShell support coming soon!</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="section demo demo-section">
-            <h2>Installation</h2>
-            <div class="installation-steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div>
-                        <p>Install hop2 with one command:</p>
-                        <div class="terminal">
-                            <button class="copy-btn" title="Copy to clipboard">📋</button>
-                            <pre><span class="prompt">$</span> <span class="command">curl -sL install.hop2.tech | bash</span></pre>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div>
-                        <p>Add to your shell configuration:</p>
-                        <div class="terminal">
-                            <button class="copy-btn" title="Copy to clipboard">📋</button>
-                            <pre><span class="prompt">$</span> <span class="command">source ~/.bashrc</span></pre>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div>
-                        <p>Start hopping!</p>
-                        <div class="terminal">
-                            <button class="copy-btn" title="Copy to clipboard">📋</button>
-                            <pre><span class="prompt">$</span> <span class="command">hop2 add project</span> <span class="comment"># Save current directory</span>
-<span class="prompt">$</span> <span class="command">hop2 project</span>     <span class="comment"># Jump back anytime!</span></pre>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="section demo demo-section">
-            <h2>Quick Demo</h2>
-            <div class="terminal">
-                <pre class="typing">
-<span class="comment"># Save your most-used directories</span>
-<span class="prompt">$</span> <span class="command">cd ~/work/frontend/src/components</span>
-<span class="prompt">$</span> <span class="command">hop2 add frontend</span>
-<span class="output">✓ Created: frontend → ~/work/frontend/src/components</span>
-
-<span class="prompt">$</span> <span class="command">cd ~/work/backend/api</span>
-<span class="prompt">$</span> <span class="command">hop2 add backend</span>
-<span class="output">✓ Created: backend → ~/work/backend/api</span>
-
-<span class="comment"># Now jump between them instantly!</span>
-<span class="prompt">$</span> <span class="command">hop2 frontend</span>  <span class="comment"># You're in frontend!</span>
-<span class="prompt">$</span> <span class="command">hop2 backend</span>   <span class="comment"># You're in backend!</span>
-
-<span class="comment"># Create command shortcuts</span>
+                <button title="Copy to clipboard">📋</button>
+                <pre><span class="comment"># Create command shortcuts</span>
 <span class="prompt">$</span> <span class="command">hop2 cmd dc "docker-compose"</span>
-<span class="prompt">$</span> <span class="command">hop2 cmd gs "git status"</span>
+<span class="prompt">$</span> <span class="command">hop2 cmd k "kubectl"</span>
 
 <span class="comment"># Use them anywhere</span>
 <span class="prompt">$</span> <span class="command">hop2 dc up -d</span>
-<span class="prompt">$</span> <span class="command">hop2 gs</span></pre>
+<span class="prompt">$</span> <span class="command">hop2 k get pods</span></pre>
             </div>
-        </section>
+        </div>
+    </div>
+</section>
 
-        <section class="section contribute-section">
-            <h2>🤝 Open Source & Community Driven</h2>
-            <div class="contribute-grid">
-                <div class="contribute-card">
-                    <h3>💡 Have an idea?</h3>
-                    <p>hop2 is open source and we love suggestions! Whether it's a feature request, bug report, or just feedback—we want to hear it.</p>
-                    <a href="https://github.com/vishukamble/hop2/issues/new" class="button button-outline">Open an issue →</a>
-                </div>
-                <div class="contribute-card">
-                    <h3>🛠️ Want to contribute?</h3>
-                    <p>PRs are welcome! Whether you're fixing a typo, adding a feature, or improving docs - every contribution matters.</p>
-                    <a href="https://github.com/vishukamble/hop2/pulls" class="button button-outline">Create a PR →</a>
-                </div>
-                <div class="contribute-card">
-                    <h3>⭐ Show support</h3>
-                    <p>If hop2 makes your life easier, consider starring the repo. It helps others discover the project!</p>
-                    <a href="https://github.com/vishukamble/hop2" class="button button-outline">Star on GitHub →</a>
-                </div>
-                <div class="contribute-card" id="latest-commit">
-                  <h3>🔄 Latest commit</h3>
-                  <p id="commit-message">Loading latest commit…</p>
-                  <p id="commit-author" style="opacity: .8; font-size: .875rem;"></p>
-                  <a id="commit-link" class="button button-outline" href="#" target="_blank">View on GitHub →</a>
-                </div>
-            </div>
-            <div class="contribute-note">
-                <p><strong>Philosophy:</strong> We believe in keeping things simple. No bloat, no unnecessary features. Just tools that make developers' lives easier.</p>
-            </div>
-        </section>
-
-        <div class="cta">
-            <a href="https://github.com/vishukamble/hop2" class="button">View on GitHub</a>
-            <a href="https://github.com/vishukamble/hop2/issues/new?title=Feature%20Request:%20&body=I%20have%20an%20idea..." class="button button-outline">Suggest a Feature</a>
+<!-- Features Section -->
+<section id="features" class="section features-section">
+    <div class="fade-in">
+        <div class="section-header">
+            <h2>Built for Developers</h2>
+            <p>Simple. Fast. Exactly what you need.</p>
         </div>
 
-        <footer>
-            <p>Made with <span style="color: #ff5f57;">❤️</span> by <a href="https://github.com/vishukamble" target="_blank" class="ai">vishukamble</a></p>
-
-            <p class="footer-links">
-                <a href="https://github.com/vishukamble/hop2">GitHub</a> &middot;
-                <a href="https://github.com/vishukamble/hop2/issues">Issues</a> &middot;
-                <a href="https://github.com/vishukamble/hop2/blob/main/LICENSE">MIT License</a>
-            </p>
-
-            <div class="footer-stats">
-                <span>👀</span> Visitors: <span id="visitor-count">...</span>
+        <div class="features-grid">
+            <div class="feature-card">
+                <span class="feature-icon">⚡</span>
+                <h3>Lightning Fast</h3>
+                <p>Zero dependencies. Pure Python. Instant navigation.</p>
             </div>
 
-            <p class="ai">Vibe coded <span style="color: #ff5f57;">&lt;3</span></p>
-        </footer>
-        </section>
+            <div class="feature-card">
+                <span class="feature-icon">🎯</span>
+                <h3>Dead Simple</h3>
+                <p>No AI. No fuzzy matching. Just aliases that work.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🔧</span>
+                <h3>Flexible</h3>
+                <p>Directory shortcuts, command aliases, or both.</p>
+            </div>
+
+            <div class="feature-card">
+                <span class="feature-icon">🚀</span>
+                <h3>Shell Native</h3>
+                <p>Works seamlessly with bash and zsh.</p>
+            </div>
+        </div>
     </div>
+</section>
+
+<!-- Installation Section -->
+<section id="install" class="section install-section">
+    <div class="fade-in">
+        <div class="section-header">
+            <h2>Get Started in 30 Seconds</h2>
+            <p>One command. That's it.</p>
+        </div>
+
+        <div class="install-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div>
+                    <h3>Install hop2</h3>
+                    <div class="terminal copyable">
+                        <button class="copy-btn" title="Copy to clipboard">📋</button>
+                        <pre><span class="prompt">$</span> <span class="command">curl -sL https://install.hop2.tech | bash</span></pre>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div>
+                    <h3>Source your shell</h3>
+                    <div class="terminal copyable">
+                        <pre><span class="prompt">$</span> <span class="command">source ~/.bashrc</span></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div>
+                    <h3>Start hopping!</h3>
+                    <div class="terminal">
+                        <button class="copy-btn" title="Copy to clipboard">📋</button>
+                        <pre><span class="prompt">$</span> <span class="command">hop2 add work</span>    <span
+                                class="comment"># Save current directory</span>
+<span class="prompt">$</span> <span class="command">hop2 work</span>        <span
+                                    class="comment"># Jump back anytime!</span></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Community Section -->
+<section id="community" class="section community-section">
+    <div class="fade-in">
+        <div class="section-header">
+            <h2>Join the Movement</h2>
+            <p>Built by developers, for developers.</p>
+        </div>
+
+        <div class="community-grid">
+            <div class="community-card">
+                <h3>⭐ Star</h3>
+                <p>Show your support and help others discover hop2.</p>
+                <a href="https://github.com/vishukamble/hop2" target="_blank" class="button">Star on GitHub</a>
+            </div>
+
+            <div class="community-card">
+                <h3>💡 Contribute</h3>
+                <p>Have ideas? Found a bug? PRs are always welcome!</p>
+                <a href="https://github.com/vishukamble/hop2/issues" target="_blank" class="button button-outline">Open
+                    an Issue</a>
+            </div>
+
+            <div class="community-card">
+                <h3>🚀 Share</h3>
+                <p>Tell your team about hop2. Better tools for everyone.</p>
+                <a href="https://twitter.com/intent/tweet?text=Check%20out%20hop2%20-%20Quick%20directory%20jumping%20for%20your%20terminal!%20https://github.com/vishukamble/hop2"
+                   target="_blank" class="button button-outline">Tweet</a>
+            </div>
+
+            <div class="community-card">
+                <h3>📚 Learn</h3>
+                <p>Check out our docs for advanced tips and tricks.</p>
+                <a href="https://github.com/vishukamble/hop2#readme" target="_blank" class="button button-outline">Read
+                    Docs</a>
+            </div>
+        </div>
+
+        <div class="latest-commit-info fade-in">
+            <a id="commit-link" href="#" target="_blank">
+                <span id="commit-icon">🔄</span>
+                <span id="commit-message">Loading latest activity...</span>
+            </a>
+        </div>
+
+    </div>
+
+    <div class="section-footer">
+        <p>Made with <span style="color: var(--accent);">❤️</span> by <a href="https://github.com/vishukamble"
+                                                                         target="_blank"
+                                                                         style="color: var(--accent); text-decoration: none;">vishukamble</a>
+        </p>
+        <p style="margin-top: 1rem; color: #666;">
+            <a href="https://github.com/vishukamble/hop2" target="_blank" style="color: #999; text-decoration: none;">GitHub</a>
+            ·
+            <a href="https://github.com/vishukamble/hop2/issues" target="_blank"
+               style="color: #999; text-decoration: none;">Issues</a>
+            ·
+            <a href="https://github.com/vishukamble/hop2/blob/main/LICENSE" target="_blank"
+               style="color: #999; text-decoration: none;">MIT
+                License</a>
+        </p>
+    </div>
+</section>
+
+<nav class="dot-nav">
+    <ul>
+        <li><a href="#hero"></a></li>
+        <li><a href="#demo"></a></li>
+        <li><a href="#features"></a></li>
+        <li><a href="#install"></a></li>
+        <li><a href="#community"></a></li>
+    </ul>
+</nav>
+
 <script>
+    // Custom cursor
+    const cursor = document.querySelector('.custom-cursor');
 
-  document.addEventListener('DOMContentLoaded', () => {
-    const msgEl    = document.getElementById('commit-message');
-    const authEl   = document.getElementById('commit-author');
-    const linkEl   = document.getElementById('commit-link');
-
-    fetch('https://api.github.com/repos/vishukamble/hop2/commits?per_page=1')
-      .then(res => res.json())
-      .then(data => {
-        const c = data[0].commit;
-        msgEl.textContent = c.message;
-        authEl.textContent = `— ${data[0].author?.login || c.author.name}`;
-        linkEl.href       = data[0].html_url;
-      })
-      .catch(() => {
-        msgEl.textContent = 'Could not load commit';
-      });
-  });
-
-  // Personalized greeting based on time
-  function getGreeting() {
-    const hour = new Date().getHours();
-    const greetings = {
-      morning: ['Good morning', '🌅 Rise and shine', '☕ Morning'],
-      afternoon: ['Good afternoon', '☀️ Hey there', 'Afternoon'],
-      evening: ['Good evening', '🌆 Evening', 'Hey there'],
-      night: ['Good night', '🌙 Night owl', '✨ Late night coding?']
-    };
-
-    let timeOfDay;
-    if (hour >= 5 && hour < 12) timeOfDay = 'morning';
-    else if (hour >= 12 && hour < 17) timeOfDay = 'afternoon';
-    else if (hour >= 17 && hour < 21) timeOfDay = 'evening';
-    else timeOfDay = 'night';
-
-    const list = greetings[timeOfDay];
-    return list[Math.floor(Math.random() * list.length)];
-  }
-
-  // Update time & zone display
-  function updateTime() {
-    const now = new Date();
-
-    // Show short weekday, 24h time, plus abbreviated timezone (e.g. "GMT-7")
-    const options = {
-      weekday: 'short',
-      hour:    '2-digit',
-      minute:  '2-digit',
-      hour12:  false,
-      timeZoneName: 'short'
-    };
-    const formatted = now.toLocaleString('en-US', options);
-
-    // Grab your IANA timezone and extract the city portion
-    const tzFull = Intl.DateTimeFormat().resolvedOptions().timeZone;        // e.g. "America/Los_Angeles"
-    const city  = tzFull.split('/').pop().replace('_', ' ');               // "Los Angeles"
-
-    document.getElementById('current-time').textContent = `${city} • ${formatted}`;
-  }
-
-  document.getElementById('greeting').textContent = getGreeting() + ', developer!';
-  updateTime();
-  setInterval(updateTime, 1000);
-
-  document.querySelectorAll('.copy-btn').forEach(button => {
-    button.addEventListener('click', async () => { // Made the function async
-        const pre = button.closest('.terminal').querySelector('pre');
-        let text = pre.innerText; // Get the raw text
-
-        // Remove a leading '$' followed by optional whitespace
-        // This regex ensures it only targets the shell prompt '$ '
-        text = text.replace(/^\$\s*/, '');
-
-        try {
-            // Use the modern Clipboard API
-            await navigator.clipboard.writeText(text);
-
-            button.innerText = '✅';
-            button.classList.add('copied');
-            setTimeout(() => {
-                button.innerText = '📋';
-                button.classList.remove('copied');
-            }, 2000);
-        } catch (err) {
-            console.error('Error copying text to clipboard:', err);
-            // Fallback for visual feedback if copy fails
-            button.innerText = '❌';
-            setTimeout(() => {
-                button.innerText = '📋';
-            }, 2000);
-
-            // Provide a message to the user if the Clipboard API is not available or if permission is denied.
-            if (err.name === 'NotAllowedError' || err.name === 'SecurityError') {
-                console.warn('Clipboard write access denied. User might need to grant permission or browser might restrict it.');
-                // You could add a more visible message to the UI here if needed
-            } else if (err.name === 'TypeError') {
-                console.warn('Clipboard API not supported in this browser or context. Falling back to manual copy suggestion.');
-                // You could offer a manual copy instruction here
-            }
-        }
+    document.addEventListener('mousemove', (e) => {
+        // The '10' is a small offset so the character doesn't sit directly under the mouse point
+        cursor.style.left = e.clientX + 10 + 'px';
+        cursor.style.top = e.clientY + 10 + 'px';
     });
-  });
 
+    // Hover effects
+    const links = document.querySelectorAll('a, button');
+    links.forEach(link => {
+        link.addEventListener('mouseenter', () => {
+            cursor.style.transform = 'scale(1.5)';
+        });
+        link.addEventListener('mouseleave', () => {
+            cursor.style.transform = 'scale(1)';
+        });
+    });
 
-  const animatedSections = document.querySelectorAll('.demo-section');
+    // Fade in animations
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+    };
 
-  const observer = new IntersectionObserver((entries) => {
+    const observer = new IntersectionObserver(function (entries) {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-                observer.unobserve(entry.target);
+                entry.target.classList.add('visible');
             }
         });
-  }, { threshold: 0.1 });
+    }, observerOptions);
 
-  animatedSections.forEach(section => {
-        section.style.opacity = '0';
-        section.style.transform = 'translateY(20px)';
-        section.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
-        observer.observe(section);
-  });
+    document.querySelectorAll('.fade-in').forEach(el => {
+        observer.observe(el);
+    });
 
-  // visitor
-  function updateVisitorCount() {
-    const namespace = 'hop2-website';
-    const key = 'count';
-
-    fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`)
-        .then(res => res.json())
-        .then(data => {
-            const countElement = document.getElementById('visitor-count');
-            if (countElement) {
-                // Note: This API returns 'data.count' instead of 'data.value'
-                countElement.innerText = data.count.toLocaleString('en-US');
-            }
-        })
-        .catch(error => {
-            console.error("Visitor count failed:", error);
-            // If the API fails, it will just show '...'
-            const countElement = document.getElementById('visitor-count');
-            if (countElement) {
-                countElement.innerText = 'N/A';
+    // Smooth scroll for navigation
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({behavior: 'smooth'});
             }
         });
-}
+    });
 
-    updateVisitorCount();
+    // Terminal typing effect
+    const terminals = document.querySelectorAll('.terminal pre');
+    terminals.forEach(terminal => {
+        const originalText = terminal.innerHTML;
+        terminal.style.opacity = '0';
+
+        const terminalObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    terminal.style.opacity = '1';
+                    terminal.style.transition = 'opacity 0.5s ease';
+                    terminalObserver.unobserve(terminal);
+                }
+            });
+        }, {threshold: 0.5});
+
+        terminalObserver.observe(terminal);
+    });
+
+    // Parallax effect for hero
+    let ticking = false;
+
+    function updateParallax() {
+        const scrolled = window.pageYOffset;
+        const hero = document.querySelector('.hero');
+        const logo = document.querySelector('.logo');
+
+        if (scrolled < window.innerHeight) {
+            hero.style.transform = `translateY(${scrolled * 0.5}px)`;
+            logo.style.transform = `translateY(${scrolled * -0.3}px) rotate(${scrolled * 0.1}deg)`;
+        }
+
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(updateParallax);
+            ticking = true;
+        }
+    });
+
+    // Copy button functionality
+    document.querySelectorAll('.copy-btn').forEach(button => {
+        button.addEventListener('click', async () => {
+            const pre = button.closest('.terminal').querySelector('pre');
+            let text = pre.innerText;
+
+            // Remove leading '$' and whitespace
+            text = text.replace(/^\$\s*/, '');
+
+            try {
+                await navigator.clipboard.writeText(text);
+
+                button.innerText = '✅';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.innerText = '📋';
+                    button.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Error copying text to clipboard:', err);
+                button.innerText = '❌';
+                setTimeout(() => {
+                    button.innerText = '📋';
+                }, 2000);
+            }
+        });
+    });
+
+    // Dot Navigation (Scrollspy)
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.dot-nav a');
+
+    const navObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute('id');
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${id}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, {threshold: 0.5});
+
+    // Smooth scroll for dot navigation
+    document.querySelectorAll('.dot-nav a').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({behavior: 'smooth'});
+            }
+        });
+    });
+
+    sections.forEach(section => navObserver.observe(section));
+
+    // Github commit
+    // Latest Commit Loader
+    document.addEventListener('DOMContentLoaded', () => {
+        const msgEl = document.getElementById('commit-message');
+        const linkEl = document.getElementById('commit-link');
+
+        fetch('https://api.github.com/repos/vishukamble/hop2/commits?per_page=1')
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    const commit = data[0];
+                    const commitMessage = commit.commit.message.split('\n')[0]; // Get first line of message
+                    msgEl.textContent = `Latest: "${commitMessage}"`;
+                    linkEl.href = commit.html_url;
+                } else {
+                    msgEl.textContent = 'Could not load latest activity.';
+                }
+            })
+            .catch(() => {
+                msgEl.textContent = 'Could not load latest activity.';
+            });
+    });
+
+    // Scroll to Top Button
+    const scrollToTopButton = document.querySelector('.scroll-to-top');
+
+    window.addEventListener('scroll', () => {
+        // Show button if user has scrolled down more than half the window height
+        if (window.scrollY > window.innerHeight / 2) {
+            scrollToTopButton.classList.add('visible');
+        } else {
+            scrollToTopButton.classList.remove('visible');
+        }
+    });
 </script>
 
+<a href="#hero" class="scroll-to-top">^</a>
 </body>
 </html>
