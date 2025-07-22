@@ -68,6 +68,9 @@
             transition: transform 0.05s ease-out;
         }
 
+        .cursor--big {
+            transform: var(--cursor-translate) translate(-50%, -50%) scale(1.5) !important;
+        }
 
 
         /* Full-height sections */
@@ -571,12 +574,21 @@
             margin-top: 3rem;
         }
 
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .community-grid {
                 grid-template-columns: 1fr;
             }
 
+            footer .footer-content {
+                text-align: center;
+                font-size: 0.9rem;
+            }
 
             body {
                 cursor: auto;
@@ -604,6 +616,9 @@
                 width: 100%;
             }
 
+            .cursor, .cursor-dot {
+                display: none;
+            }
         }
 
         .community-section .fade-in {
@@ -630,6 +645,11 @@
             opacity: 0;
             transform: translateY(30px);
             transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* dot navigation styling */
@@ -1039,7 +1059,7 @@
     let ticking = false;
 
     function updateParallax() {
-        const scrolled = window.scrollY;
+        const scrolled = window.pageYOffset;
         const hero = document.querySelector('.hero');
         const logo = document.querySelector('.logo');
 
