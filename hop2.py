@@ -188,7 +188,7 @@ def list_all(_=None):
         cmds = c.fetchall()
 
     if dirs:
-        print("\n📁 Directory Shortcuts (Mario is ready to jump!)")
+        print("\n📁 Directory Shortcuts (Hopper is ready to jump!)")
         print("─" * 70)
 
         dir_paths = [d['path'] for d in dirs]
