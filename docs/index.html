@@ -52,14 +52,23 @@
 
         .custom-cursor {
             position: fixed;
-            z-index: 9999;
-            pointer-events: none;
-            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            width: 36px; /* make it big so its “hot” area is large */
+            height: 36px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 1.5rem;
             font-weight: bold;
-            color: var(--accent);
-            transition: transform 0.2s ease;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: var(--cursor-translate) translate(-50%, -50%) scale(1);
+            transition: transform 0.05s ease-out;
         }
+
+
 
         /* Full-height sections */
         .section {
@@ -562,21 +571,12 @@
             margin-top: 3rem;
         }
 
-        .footer-content {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
         /* Responsive */
         @media (max-width: 768px) {
             .community-grid {
                 grid-template-columns: 1fr;
             }
 
-            footer .footer-content {
-                text-align: center;
-                font-size: 0.9rem;
-            }
 
             body {
                 cursor: auto;
@@ -604,9 +604,6 @@
                 width: 100%;
             }
 
-            .cursor, .cursor-dot {
-                display: none;
-            }
         }
 
         .community-section .fade-in {
@@ -633,11 +630,6 @@
             opacity: 0;
             transform: translateY(30px);
             transition: all 0.6s ease;
-        }
-
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
         }
 
         /* dot navigation styling */
@@ -740,12 +732,16 @@
             pointer-events: auto;
         }
 
+        :root {
+            --cursor-translate: translate(0px, 0px);
+        }
+
     </style>
 </head>
 <body>
 
 <!-- Custom cursor -->
-<div class="custom-cursor">></div>
+<div class="custom-cursor">〉</div>
 
 <!-- Hero Section -->
 <section id="hero" class="section hero">
@@ -863,6 +859,7 @@
                     <div class="terminal copyable">
                         <button class="copy-btn" title="Copy to clipboard">📋</button>
                         <pre><span class="prompt">$</span> <span class="command">curl -sL https://install.hop2.tech | bash</span></pre>
+
                     </div>
                 </div>
             </div>
@@ -872,6 +869,7 @@
                 <div>
                     <h3>Source your shell</h3>
                     <div class="terminal copyable">
+                        <button class="copy-btn" title="Copy to clipboard">📋</button>
                         <pre><span class="prompt">$</span> <span class="command">source ~/.bashrc</span></pre>
                     </div>
                 </div>
@@ -969,24 +967,24 @@
 </nav>
 
 <script>
+
     // Custom cursor
     const cursor = document.querySelector('.custom-cursor');
-
-    document.addEventListener('mousemove', (e) => {
-        // The '10' is a small offset so the character doesn't sit directly under the mouse point
-        cursor.style.left = e.clientX + 10 + 'px';
-        cursor.style.top = e.clientY + 10 + 'px';
-    });
-
+    document.addEventListener('mousemove', e => {
+        document.documentElement.style.setProperty(
+            '--cursor-translate',
+            `translate(${e.clientX}px, ${e.clientY}px)`
+        );
+    })
     // Hover effects
     const links = document.querySelectorAll('a, button');
     links.forEach(link => {
-        link.addEventListener('mouseenter', () => {
-            cursor.style.transform = 'scale(1.5)';
-        });
-        link.addEventListener('mouseleave', () => {
-            cursor.style.transform = 'scale(1)';
-        });
+        link.addEventListener('mouseenter', () =>
+            cursor.classList.add('cursor--big')
+        );
+        link.addEventListener('mouseleave', () =>
+            cursor.classList.remove('cursor--big')
+        );
     });
 
     // Fade in animations
@@ -1041,7 +1039,7 @@
     let ticking = false;
 
     function updateParallax() {
-        const scrolled = window.pageYOffset;
+        const scrolled = window.scrollY;
         const hero = document.querySelector('.hero');
         const logo = document.querySelector('.logo');
 
