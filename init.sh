@@ -4,7 +4,6 @@
 # source ~/.hop2/init.sh
 
 # Main hop2 function that handles directory changes and command shortcuts
-# Main hop2 function that handles directory changes and command shortcuts
 hop2() {
     # Don't do anything if no arguments are provided
     if [ "$#" -eq 0 ]; then
@@ -52,30 +51,30 @@ h() {
 }
 
 # Bash completion with ALL commands
-_hop2_completion() {
-  local cur prev commands aliases
-  cur="${COMP_WORDS[COMP_CWORD]}"
-  prev="${COMP_WORDS[COMP_CWORD-1]}"
-
-  if (( COMP_CWORD == 1 )); then
-    commands="add cmd list ls rm go --update --uninstall --help"
-    aliases=$(sqlite3 ~/.hop2/hop2.db \
-      "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null \
-       | tr '\n' ' ')
-    COMPREPLY=( $(compgen -W "$commands $aliases" -- "$cur") )
-    return
-  fi
-
-  case "$prev" in
-    rm|go)
-      aliases=$(sqlite3 ~/.hop2/hop2.db \
-        "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null \
-         | tr '\n' ' ')
-      COMPREPLY=( $(compgen -W "$aliases" -- "$cur") );;
-  esac
-}
-
 if [ -n "$BASH_VERSION" ]; then
+    _hop2_completion() {
+      local cur prev commands aliases
+      cur="${COMP_WORDS[COMP_CWORD]}"
+      prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+      if (( COMP_CWORD == 1 )); then
+        commands="add cmd list ls rm go --update --uninstall --help"
+        aliases=$(sqlite3 ~/.hop2/hop2.db \
+          "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null \
+           | tr '\n' ' ')
+        COMPREPLY=( $(compgen -W "$commands $aliases" -- "$cur") )
+        return
+      fi
+
+      case "$prev" in
+        rm|go)
+          aliases=$(sqlite3 ~/.hop2/hop2.db \
+            "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null \
+             | tr '\n' ' ')
+          COMPREPLY=( $(compgen -W "$aliases" -- "$cur") );;
+      esac
+    }
+
     complete -F _hop2_completion hop2
     complete -F _hop2_completion h2
     complete -F _hop2_completion h
@@ -83,11 +82,19 @@ fi
 
 # Zsh completion
 if [ -n "$ZSH_VERSION" ]; then
+    # First ensure the completion system is loaded
+    if ! type compdef &>/dev/null; then
+        autoload -Uz compinit && compinit
+    fi
+
     _hop2() {
         local -a all_aliases
         all_aliases=(${(f)"$(sqlite3 ~/.hop2/hop2.db 'SELECT alias FROM directories UNION SELECT alias FROM commands' 2>/dev/null)"})
         _arguments "1:command:(add cmd list ls rm $all_aliases)"
     }
-    compdef _hop2 hop2 h2 h
-fi
 
+    # Only set up completion if compdef is available
+    if type compdef &>/dev/null; then
+        compdef _hop2 hop2 h2 h
+    fi
+fi
