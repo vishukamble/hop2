@@ -103,6 +103,8 @@ cat <<'EOF'
 │ hop2 cmd gs 'git status'         │ Create command alias "gs"                │
 │ hop2 gs                          │ Run "git status"                         │
 │ h work                           │ Use "h" for even shorter directory jumps │
+│ hop2 --backup                    │ Backup shortcuts to timestamped JSON     │
+│ hop2 --restore backup.json       │ Restore shortcuts from backup file       │
 └──────────────────────────────────┴──────────────────────────────────────────┘
 
 ⚠️  Final Step: Reload your shell to complete the installation!
