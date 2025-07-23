@@ -13,6 +13,7 @@ from pathlib import Path
 import urllib.request
 import tempfile
 import shutil
+import json
 
 # Config
 DB_PATH = os.path.expanduser("~/.hop2/hop2.db")
@@ -37,11 +38,17 @@ def print_help():
     print(f"{'  cmd <alias> <command>':<25} Add command shortcut")
     print(f"{'  list, ls':<25} List all shortcuts")
     print(f"{'  rm <alias>':<25} Remove a shortcut")
+    print(f"{'  --backup [file]':<25} Backup shortcuts to JSON")
+    print(f"{'  --restore <file>':<25} Restore from JSON backup")
+    print(f"{'  --update':<25} Update hop2 to latest")
+    print(f"{'  --uninstall':<25} Remove hop2 completely")
     print("\nExamples:")
     print("  hop2 add work          # Save current dir as 'work'")
     print("  hop2 work              # Jump to work directory")
     print("  hop2 cmd gs 'git status'")
     print("  hop2 gs                # Run git status")
+    print("  hop2 --backup          # Backup to timestamped file")
+    print("  hop2 --restore backup.json  # Restore from backup")
     print()
     sys.exit(0)
 
@@ -264,11 +271,113 @@ def run_command(alias, extra_args=None):
     return False
 
 
+def backup_data(filename=None):
+    """Backup hop2 data to a JSON file"""
+    if filename is None:
+        # Default filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"hop2_backup_{timestamp}.json"
+
+    backup_data = {
+        "version": "1.0",
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "directories": [],
+        "commands": []
+    }
+
+    with get_conn() as conn:
+        c = conn.cursor()
+        # Get directories
+        c.execute("SELECT alias, path, created_at, uses FROM directories")
+        for row in c.fetchall():
+            backup_data["directories"].append({
+                "alias": row[0],
+                "path": row[1],
+                "created_at": row[2],
+                "uses": row[3]
+            })
+
+        # Get commands
+        c.execute("SELECT alias, command, created_at, uses FROM commands")
+        for row in c.fetchall():
+            backup_data["commands"].append({
+                "alias": row[0],
+                "command": row[1],
+                "created_at": row[2],
+                "uses": row[3]
+            })
+
+    # Write to file
+    with open(filename, 'w') as f:
+        json.dump(backup_data, f, indent=2)
+
+    print(f"✅ Backup saved to: {filename}")
+    print(f"   • {len(backup_data['directories'])} directories")
+    print(f"   • {len(backup_data['commands'])} commands")
+    return 0
+
+
+def restore_data(filename):
+    """Restore hop2 data from a JSON file"""
+    if not os.path.exists(filename):
+        print(f"❌ Backup file not found: {filename}")
+        return 1
+
+    try:
+        with open(filename, 'r') as f:
+            backup_data = json.load(f)
+    except Exception as e:
+        print(f"❌ Error reading backup file: {e}")
+        return 1
+
+    # Ask for confirmation
+    print(f"\n📦 Restore from: {filename}")
+    print(f"   • {len(backup_data.get('directories', []))} directories")
+    print(f"   • {len(backup_data.get('commands', []))} commands")
+    print("\n⚠️  This will merge with existing shortcuts.")
+    ans = input("Continue? [y/N]: ")
+    if ans.lower() != 'y':
+        print("❌ Restore cancelled.")
+        return 1
+
+    restored = {"dirs": 0, "cmds": 0}
+
+    with get_conn() as conn:
+        c = conn.cursor()
+
+        # Restore directories
+        for d in backup_data.get('directories', []):
+            try:
+                c.execute("""
+                    INSERT OR REPLACE INTO directories (alias, path, created_at, uses) 
+                    VALUES (?, ?, ?, ?)
+                """, (d['alias'], d['path'], d.get('created_at'), d.get('uses', 0)))
+                restored["dirs"] += 1
+            except Exception as e:
+                print(f"⚠️  Skipped directory {d['alias']}: {e}")
+
+        # Restore commands
+        for cmd in backup_data.get('commands', []):
+            try:
+                c.execute("""
+                    INSERT OR REPLACE INTO commands (alias, command, created_at, uses) 
+                    VALUES (?, ?, ?, ?)
+                """, (cmd['alias'], cmd['command'], cmd.get('created_at'), cmd.get('uses', 0)))
+                restored["cmds"] += 1
+            except Exception as e:
+                print(f"⚠️  Skipped command {cmd['alias']}: {e}")
+
+    print(f"\n✅ Restore complete!")
+    print(f"   • Restored {restored['dirs']} directories")
+    print(f"   • Restored {restored['cmds']} commands")
+    return 0
+
+
 def update_me(_=None):
     print("Updating hop2...")
     try:
         data = urllib.request.urlopen(
-            'https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh'
+            'https://install.hop2.tech'
         ).read()
         with tempfile.NamedTemporaryFile('wb', delete=False) as f:
             f.write(data)
@@ -303,7 +412,7 @@ def uninstall_me(_=None):
                 os.remove(p)
                 removed_from.append(d)
             except OSError as e:
-                errors.append(f"Couldn’t remove from {d}: {e}")
+                errors.append(f"Couldn't remove from {d}: {e}")
 
     # 2) Remove ~/.hop2 data directory
     hop2_dir = os.path.expanduser('~/.hop2')
@@ -313,7 +422,7 @@ def uninstall_me(_=None):
             shutil.rmtree(hop2_dir)
             dir_removed = True
         except OSError as e:
-            errors.append(f"Couldn’t remove {hop2_dir}: {e}")
+            errors.append(f"Couldn't remove {hop2_dir}: {e}")
 
     # 3) Clean up shell RC files
     shell_cleaned = []
@@ -360,7 +469,6 @@ def uninstall_me(_=None):
     return 0
 
 
-
 def main():
     # Use argparse from the start to handle flags like --uninstall and --help
     parser = argparse.ArgumentParser(
@@ -370,6 +478,9 @@ def main():
     parser.add_argument('-h', '--help', action='store_true', help=argparse.SUPPRESS)
     parser.add_argument('--uninstall', action='store_true', help="Uninstall hop2 from your system.")
     parser.add_argument('--update', action='store_true', help="Update hop2 to the latest version.")
+    parser.add_argument('--backup', nargs='?', const=True, metavar='FILE',
+                        help="Backup hop2 data to JSON file (default: hop2_backup_TIMESTAMP.json)")
+    parser.add_argument('--restore', metavar='FILE', help="Restore hop2 data from JSON backup file")
 
     # Parse only the known flags, leave the rest for sub-command/alias handling
     args, remainder = parser.parse_known_args()
@@ -385,6 +496,17 @@ def main():
 
     if args.update:
         update_me()
+        sys.exit(0)
+
+    if args.backup:
+        if args.backup is True:
+            backup_data()
+        else:
+            backup_data(args.backup)
+        sys.exit(0)
+
+    if args.restore:
+        restore_data(args.restore)
         sys.exit(0)
 
     # If no remaining args, show help

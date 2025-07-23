@@ -12,9 +12,9 @@ hop2() {
     fi
 
     local output
-    # If the user asked to uninstall or update, run hop2 directly (no capture),
+    # If the user asked to uninstall, update, backup, or restore, run hop2 directly (no capture),
     # so prompts and input() work as expected:
-    if [ "$1" = "--uninstall" ] || [ "$1" = "--update" ] ; then
+    if [ "$1" = "--uninstall" ] || [ "$1" = "--update" ] || [ "$1" = "--backup" ] || [ "$1" = "--restore" ]; then
         command hop2 "$@"
         return $?
     fi
@@ -58,7 +58,8 @@ if [ -n "$BASH_VERSION" ]; then
       prev="${COMP_WORDS[COMP_CWORD-1]}"
 
       if (( COMP_CWORD == 1 )); then
-        commands="add cmd list ls rm go --update --uninstall --help"
+        commands="add cmd list ls rm go --update --uninstall --backup --restore --help"
+
         aliases=$(sqlite3 ~/.hop2/hop2.db \
           "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null \
            | tr '\n' ' ')
@@ -72,6 +73,9 @@ if [ -n "$BASH_VERSION" ]; then
             "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null \
              | tr '\n' ' ')
           COMPREPLY=( $(compgen -W "$aliases" -- "$cur") );;
+        --restore)
+          COMPREPLY=( $(compgen -f -- "$cur") );;
+
       esac
     }
 
@@ -90,7 +94,7 @@ if [ -n "$ZSH_VERSION" ]; then
     _hop2() {
         local -a all_aliases
         all_aliases=(${(f)"$(sqlite3 ~/.hop2/hop2.db 'SELECT alias FROM directories UNION SELECT alias FROM commands' 2>/dev/null)"})
-        _arguments "1:command:(add cmd list ls rm $all_aliases)"
+        _arguments "1:command:(add cmd list ls rm --backup --restore --update --uninstall $all_aliases)"
     }
 
     # Only set up completion if compdef is available
