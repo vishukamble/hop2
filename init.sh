@@ -59,6 +59,7 @@ if [ -n "$BASH_VERSION" ]; then
 
       if (( COMP_CWORD == 1 )); then
         commands="add cmd list ls rm go --update --uninstall --backup --restore --help"
+
         aliases=$(sqlite3 ~/.hop2/hop2.db \
           "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null \
            | tr '\n' ' ')
@@ -74,6 +75,7 @@ if [ -n "$BASH_VERSION" ]; then
           COMPREPLY=( $(compgen -W "$aliases" -- "$cur") );;
         --restore)
           COMPREPLY=( $(compgen -f -- "$cur") );;
+
       esac
     }
 
