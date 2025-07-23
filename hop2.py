@@ -377,7 +377,7 @@ def update_me(_=None):
     print("Updating hop2...")
     try:
         data = urllib.request.urlopen(
-            'https://install.hop2.tech'
+            'https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh'
         ).read()
         with tempfile.NamedTemporaryFile('wb', delete=False) as f:
             f.write(data)
@@ -431,15 +431,39 @@ def uninstall_me(_=None):
         if not os.path.exists(path):
             continue
 
-        # remove any line that exactly matches 'source ~/.hop2/init.sh'
+        # Remove hop2 integration lines (both comment and source)
         try:
             with open(path, 'r') as f:
                 lines = f.readlines()
-            with open(path, 'w') as f:
-                for line in lines:
-                    if line.strip() == 'source ~/.hop2/init.sh':
+
+            new_lines = []
+            skip_next = False
+
+            for i, line in enumerate(lines):
+                # Check if this is the hop2 comment line
+                if line.strip() == '# hop2 shell integration':
+                    # Check if the next line is the source command
+                    if i + 1 < len(lines) and lines[i + 1].strip() == 'source ~/.hop2/init.sh':
+                        skip_next = True  # Skip both this line and the next
                         continue
-                    f.write(line)
+                    # If it's just an orphaned comment, skip it
+                    continue
+
+                # Skip the source line if it follows the comment
+                if skip_next and line.strip() == 'source ~/.hop2/init.sh':
+                    skip_next = False
+                    continue
+
+                # Also skip any standalone source line (in case comment was manually removed)
+                if line.strip() == 'source ~/.hop2/init.sh':
+                    continue
+
+                new_lines.append(line)
+
+            # Write back the cleaned content
+            with open(path, 'w') as f:
+                f.writelines(new_lines)
+
             shell_cleaned.append(rc)
         except Exception as e:
             errors.append(f"Failed to clean {rc}: {e}")
