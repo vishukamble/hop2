@@ -36,12 +36,22 @@
             </div>
         </div>
         <div class="video-container">
-            <video autoplay loop muted playsinline
-                   poster="https://github.com/vishukamble/hop2/releases/download/v1.0.0/hop2_screen.png">
-                <source src="https://github.com/vishukamble/hop2/releases/download/v1.0.0/demo_video.mp4"
+            <video id="hop2-video" autoplay loop muted playsinline
+                   poster="https://github.com/vishukamble/hop2/releases/download/v1.0.0/_hop2_screen.png">
+                <source src="https://github.com/vishukamble/hop2/releases/download/v1.0.0/_demo_video.mp4"
                         type="video/mp4">
                 Your browser does not support the video tag.
             </video>
+
+            <div class="video-controls">
+                <button id="play-pause-btn">
+                    <img id="play-pause-icon" src="assets/img/pause.svg" alt="Pause">
+                </button>
+
+                <button id="mute-btn">
+                    <img id="mute-icon" src="assets/img/mute.svg" alt="Unmute">
+                </button>
+            </div>
         </div>
     </div>
     <div class="scroll-indicator">

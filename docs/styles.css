@@ -125,6 +125,40 @@ body, a, button {
     display: block;
 }
 
+/* New container for the control buttons */
+.video-controls {
+    position: absolute;
+    top: 35px;
+    right: 20px;
+    display: flex; /* Use flexbox to align buttons */
+    gap: 10px;     /* Add a 10px space between buttons */
+}
+
+#play-pause-btn,
+#mute-btn {
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+#play-pause-btn:hover,
+#mute-btn:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+#play-pause-icon,
+#mute-icon {
+    width: 24px;
+    height: 24px;
+}
+
 .logo {
     width: 150px;
     height: 150px;
@@ -681,7 +715,9 @@ footer {
     }
 
     .video-container {
-        margin-top: 3rem;
+            position: relative;
+    width: 100%;
+    height: auto;
     }
 }
 
