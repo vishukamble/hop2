@@ -241,3 +241,44 @@ function updateVisitorCount() {
             }
         });
 }
+
+// Wait for the document to be fully loaded before running the script
+document.addEventListener('DOMContentLoaded', () => {
+    const video = document.getElementById('hop2-video');
+    // Mute button elements
+    const muteBtn = document.getElementById('mute-btn');
+    const muteIcon = document.getElementById('mute-icon');
+    // Play/Pause button elements
+    const playPauseBtn = document.getElementById('play-pause-btn');
+    const playPauseIcon = document.getElementById('play-pause-icon');
+    // --- Define Icon Paths ---
+    const volumeOnIconPath = 'assets/img/unmute.svg';
+    const volumeOffIconPath = 'assets/img/mute.svg';
+    const playIconPath = 'assets/img/play.svg';
+    const pauseIconPath = 'assets/img/pause.svg';
+
+    if (video) {
+        video.volume = 0.2; // Set default volume to 20%
+    }
+
+    // Mute/Unmute Logic
+    if (muteBtn) {
+        muteBtn.addEventListener('click', () => {
+            video.muted = !video.muted;
+            muteIcon.src = video.muted ? volumeOffIconPath : volumeOnIconPath;
+        });
+    }
+
+    // Play/Pause Logic
+    if (playPauseBtn) {
+        playPauseBtn.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+                playPauseIcon.src = pauseIconPath;
+            } else {
+                video.pause();
+                playPauseIcon.src = playIconPath;
+            }
+        });
+    }
+});
