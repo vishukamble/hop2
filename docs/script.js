@@ -244,24 +244,26 @@ function updateVisitorCount() {
 
 // Wait for the document to be fully loaded before running the script
 document.addEventListener('DOMContentLoaded', () => {
+
+    // --- Get Elements ---
     const video = document.getElementById('hop2-video');
-    // Mute button elements
     const muteBtn = document.getElementById('mute-btn');
     const muteIcon = document.getElementById('mute-icon');
-    // Play/Pause button elements
     const playPauseBtn = document.getElementById('play-pause-btn');
     const playPauseIcon = document.getElementById('play-pause-icon');
-    // --- Define Icon Paths ---
-    const volumeOnIconPath = 'img/unmute.svg';
-    const volumeOffIconPath = 'img/mute.svg';
-    const playIconPath = 'img/play.svg';
-    const pauseIconPath = 'img/pause.svg';
 
+    // --- Define Icon Paths ---
+    const volumeOnIconPath = 'assets/img/unmute.svg';
+    const volumeOffIconPath = 'assets/img/mute.svg';
+    const playIconPath = 'assets/img/play.svg';
+    const pauseIconPath = 'assets/img/pause.svg';
+
+    // --- Set Initial Video Volume ---
     if (video) {
-        video.volume = 0.2; // Set default volume to 20%
+        video.volume = 0.2;
     }
 
-    // Mute/Unmute Logic
+    // --- Button Event Listeners ---
     if (muteBtn) {
         muteBtn.addEventListener('click', () => {
             video.muted = !video.muted;
@@ -269,16 +271,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Play/Pause Logic
     if (playPauseBtn) {
         playPauseBtn.addEventListener('click', () => {
             if (video.paused) {
                 video.play();
-                playPauseIcon.src = pauseIconPath;
+                playPauseIcon.src = img/pause.svg;
             } else {
                 video.pause();
-                playPauseIcon.src = playIconPath;
+                playPauseIcon.src = img/play.svg;
             }
         });
+    }
+
+    // --- Intersection Observer Logic ---
+    const observerOptions = {
+      root: null, // observes intersections relative to the viewport
+      threshold: 0.75 // triggers when 75% of the video is visible
+    };
+
+    const videoObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          // Video is visible, play it
+          video.play();
+          playPauseIcon.src = 'img/pause.svg';
+        } else {
+          // Video is not visible, pause it
+          video.pause();
+          playPauseIcon.src = 'img/play.svg';
+        }
+      });
+    }, observerOptions);
+
+    // Start observing the video
+    if (video) {
+      videoObserver.observe(video);
     }
 });
