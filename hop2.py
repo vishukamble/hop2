@@ -279,18 +279,21 @@ def backup_data(filename=None):
         filename = f"hop2_backup_{timestamp}.json"
 
     backup_data = {
-        "version": "1.0",
+        "version": "2.0",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "directories": [],
-        "commands": []
+        "database": {
+            "directories": [],
+            "commands": []
+        }
     }
 
     with get_conn() as conn:
         c = conn.cursor()
+
         # Get directories
         c.execute("SELECT alias, path, created_at, uses FROM directories")
         for row in c.fetchall():
-            backup_data["directories"].append({
+            backup_data["database"]["directories"].append({
                 "alias": row[0],
                 "path": row[1],
                 "created_at": row[2],
@@ -300,7 +303,7 @@ def backup_data(filename=None):
         # Get commands
         c.execute("SELECT alias, command, created_at, uses FROM commands")
         for row in c.fetchall():
-            backup_data["commands"].append({
+            backup_data["database"]["commands"].append({
                 "alias": row[0],
                 "command": row[1],
                 "created_at": row[2],
@@ -311,9 +314,12 @@ def backup_data(filename=None):
     with open(filename, 'w') as f:
         json.dump(backup_data, f, indent=2)
 
+    total_dirs = len(backup_data["database"]["directories"])
+    total_cmds = len(backup_data["database"]["commands"])
+
     print(f"✅ Backup saved to: {filename}")
-    print(f"   • {len(backup_data['directories'])} directories")
-    print(f"   • {len(backup_data['commands'])} commands")
+    print(f"   • {total_dirs} directories")
+    print(f"   • {total_cmds} commands")
     return 0
 
 
@@ -330,10 +336,26 @@ def restore_data(filename):
         print(f"❌ Error reading backup file: {e}")
         return 1
 
+    # Initialize database if it doesn't exist
+    init_db()
+
+    # Handle both v1.0 (flat) and v2.0 (database) backup formats
+    version = backup_data.get("version", "1.0")
+
+    if version == "2.0" and "database" in backup_data:
+        # New format with database structure
+        directories = backup_data["database"].get("directories", [])
+        commands = backup_data["database"].get("commands", [])
+    else:
+        # Old format (v1.0) - flat structure
+        directories = backup_data.get("directories", [])
+        commands = backup_data.get("commands", [])
+
     # Ask for confirmation
     print(f"\n📦 Restore from: {filename}")
-    print(f"   • {len(backup_data.get('directories', []))} directories")
-    print(f"   • {len(backup_data.get('commands', []))} commands")
+    print(f"   • Format version: {version}")
+    print(f"   • {len(directories)} directories")
+    print(f"   • {len(commands)} commands")
     print("\n⚠️  This will merge with existing shortcuts.")
     ans = input("Continue? [y/N]: ")
     if ans.lower() != 'y':
@@ -346,7 +368,7 @@ def restore_data(filename):
         c = conn.cursor()
 
         # Restore directories
-        for d in backup_data.get('directories', []):
+        for d in directories:
             try:
                 c.execute("""
                     INSERT OR REPLACE INTO directories (alias, path, created_at, uses) 
@@ -357,7 +379,7 @@ def restore_data(filename):
                 print(f"⚠️  Skipped directory {d['alias']}: {e}")
 
         # Restore commands
-        for cmd in backup_data.get('commands', []):
+        for cmd in commands:
             try:
                 c.execute("""
                     INSERT OR REPLACE INTO commands (alias, command, created_at, uses) 
@@ -377,7 +399,7 @@ def update_me(_=None):
     print("Updating hop2...")
     try:
         data = urllib.request.urlopen(
-            'https://raw.githubusercontent.com/vishukamble/hop2/main/install.sh'
+            'https://install.hop2.tech'
         ).read()
         with tempfile.NamedTemporaryFile('wb', delete=False) as f:
             f.write(data)
