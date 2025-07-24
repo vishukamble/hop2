@@ -252,10 +252,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const playPauseBtn = document.getElementById('play-pause-btn');
     const playPauseIcon = document.getElementById('play-pause-icon');
     // --- Define Icon Paths ---
-    const volumeOnIconPath = 'assets/img/unmute.svg';
-    const volumeOffIconPath = 'assets/img/mute.svg';
-    const playIconPath = 'assets/img/play.svg';
-    const pauseIconPath = 'assets/img/pause.svg';
+    const volumeOnIconPath = 'img/unmute.svg';
+    const volumeOffIconPath = 'img/mute.svg';
+    const playIconPath = 'img/play.svg';
+    const pauseIconPath = 'img/pause.svg';
 
     if (video) {
         video.volume = 0.2; // Set default volume to 20%
