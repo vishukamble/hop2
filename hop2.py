@@ -39,7 +39,7 @@ def print_help():
     print(f"{'  list, ls':<25} List all shortcuts")
     print(f"{'  rm <alias>':<25} Remove a shortcut")
     print(f"{'  --backup [file]':<25} Backup shortcuts to JSON")
-    print(f"{'  --restore <file>':<25} Restore from JSON backup")
+    print(f"{'  --restore <file]':<25} Restore from JSON backup")
     print(f"{'  --update':<25} Update hop2 to latest")
     print(f"{'  --uninstall':<25} Remove hop2 completely")
     print("\nExamples:")
@@ -213,14 +213,11 @@ def list_all(_=None):
             print(f"  {d['alias']:<15} → ./{relative_path:<40} ({d['uses']} uses)")
 
         # The 'r' before the """ fixes the SyntaxWarning
+        # ----- BUNNY ART UPDATED HERE -----
         print(r"""
-                     .--.
-                    |o_o |
-                    |:_/ |
-                   //   \ \
-                  (|     | )
-                 /'\_   _/`\
-                 \___)=(___/
+          /)/)
+        ( . .)
+        o_(")(")
         """)
 
     if cmds:
@@ -371,7 +368,7 @@ def restore_data(filename):
         for d in directories:
             try:
                 c.execute("""
-                    INSERT OR REPLACE INTO directories (alias, path, created_at, uses) 
+                    INSERT OR REPLACE INTO directories (alias, path, created_at, uses)
                     VALUES (?, ?, ?, ?)
                 """, (d['alias'], d['path'], d.get('created_at'), d.get('uses', 0)))
                 restored["dirs"] += 1
@@ -382,7 +379,7 @@ def restore_data(filename):
         for cmd in commands:
             try:
                 c.execute("""
-                    INSERT OR REPLACE INTO commands (alias, command, created_at, uses) 
+                    INSERT OR REPLACE INTO commands (alias, command, created_at, uses)
                     VALUES (?, ?, ?, ?)
                 """, (cmd['alias'], cmd['command'], cmd.get('created_at'), cmd.get('uses', 0)))
                 restored["cmds"] += 1
@@ -491,14 +488,19 @@ def uninstall_me(_=None):
             errors.append(f"Failed to clean {rc}: {e}")
 
     # 4) Final report
+
+    exec_status = '✅' if removed_from else '❌'
+    dir_status = '✅' if dir_removed else '❌'
+    shell_status = '✅' if shell_cleaned else '❌'
+
+    # Print the final report table
     print("┌──────────────────────────────────────────╥────────┐")
     print("│ Action                                   ║ Status │")
     print("╞══════════════════════════════════════════╫════════╡")
-    print(f"│ Removed hop2 executable                  ║ {'✅' if removed_from else 'n/a'}    │")
-    print(f"│ Removed ~/.hop2 data directory           ║ {'✅' if dir_removed else 'n/a'}    │")
-    print(f"│ Cleaned shell config (.bashrc/.zshrc)    ║ {'✅' if shell_cleaned else 'n/a'}    │")
+    print(f"│ Removed hop2 executable                  ║   {exec_status}    │")
+    print(f"│ Removed ~/.hop2 data directory           ║   {dir_status}    │")
+    print(f"│ Cleaned shell config (.bashrc/.zshrc)    ║   {shell_status}    │")
     print("└──────────────────────────────────────────╨────────┘\n")
-
     if errors:
         print("⚠️  Some issues encountered:")
         for e in errors:
