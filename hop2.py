@@ -9,22 +9,34 @@ import subprocess
 import argparse
 from datetime import datetime, timezone
 from contextlib import contextmanager
-from pathlib import Path
 import urllib.request
 import tempfile
 import shutil
 import json
+import re
+import shlex
 
 # Config
 DB_PATH = os.path.expanduser("~/.hop2/hop2.db")
 DB_DIR = os.path.dirname(DB_PATH)
 
 # Reserved words
-RESERVED_ALIASES = [
-    'add', 'cmd', 'list', 'rm', 'go',
-    'help', '--help', '-h'
-]
+RESERVED_ALIASES = {
+    'add', 'cmd', 'list', 'ls', 'rm', 'go', 'update',
+    'backup', 'restore', 'uninstall',
+    'help', '--help', '-h',
+    '--update', '--backup', '--restore', '--uninstall'
+}
+ALIAS_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 
+def validate_alias(alias: str) -> bool:
+    if alias in RESERVED_ALIASES:
+        print(f"❌ '{alias}' is a reserved keyword and cannot be used.")
+        return False
+    if not ALIAS_PATTERN.fullmatch(alias):
+        print("❌ Invalid alias. Use letters, numbers, ., _, - (max 64 chars, must start with alnum).")
+        return False
+    return True
 
 def print_help():
     """Custom table-formatted help"""
@@ -107,9 +119,8 @@ def init_db():
 
 
 def add_directory(alias, path=None):
-    """Add a directory shortcut"""
-    if alias in RESERVED_ALIASES:
-        print(f"❌ '{alias}' is a reserved keyword and cannot be used.")
+    """Add or update a directory shortcut."""
+    if not validate_alias(alias):
         return 1
 
     if path is None:
@@ -117,48 +128,58 @@ def add_directory(alias, path=None):
     else:
         path = os.path.abspath(os.path.expanduser(path))
 
-    if not os.path.exists(path):
-        print(f"❌ Path does not exist: {path}")
+    if not os.path.isdir(path):
+        print(f"❌ Directory does not exist: {path}")
         return 1
 
     created = datetime.now(timezone.utc).isoformat()
     with get_conn() as conn:
         c = conn.cursor()
-        try:
-            c.execute(
-                "INSERT INTO directories (alias, path, created_at) VALUES (?, ?, ?)",
-                (alias, path, created)
-            )
-            print(f"✅ Created: {alias} → {path}")
-        except sqlite3.IntegrityError:
-            c.execute(
-                "UPDATE directories SET path = ? WHERE alias = ?", (path, alias)
-            )
-            print(f"✅ Updated: {alias} → {path}")
+
+        # Prevent alias collision across tables
+        c.execute("SELECT 1 FROM commands WHERE alias = ?", (alias,))
+        if c.fetchone():
+            print(f"❌ Alias '{alias}' already exists as a command shortcut.")
+            return 1
+
+        c.execute("""
+            INSERT INTO directories (alias, path, created_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(alias) DO UPDATE SET path = excluded.path
+        """, (alias, path, created))
+
+        # Optional: detect create vs update
+        print(f"✅ Saved: {alias} → {path}")
     return 0
 
 
 def add_command(alias, cmd_parts):
-    """Add a command shortcut"""
-    if alias in RESERVED_ALIASES:
-        print(f"❌ '{alias}' is a reserved keyword and cannot be used.")
+    """Add or update a command shortcut."""
+    if not validate_alias(alias):
         return 1
 
-    command = ' '.join(cmd_parts)
+    command = ' '.join(cmd_parts).strip()
+    if not command:
+        print("❌ Command cannot be empty.")
+        return 1
+
     created = datetime.now(timezone.utc).isoformat()
     with get_conn() as conn:
         c = conn.cursor()
-        try:
-            c.execute(
-                "INSERT INTO commands (alias, command, created_at) VALUES (?, ?, ?)",
-                (alias, command, created)
-            )
-            print(f"✅ Created command: {alias} → {command}")
-        except sqlite3.IntegrityError:
-            c.execute(
-                "UPDATE commands SET command = ? WHERE alias = ?", (command, alias)
-            )
-            print(f"✅ Updated command: {alias} → {command}")
+
+        # Prevent alias collision across tables
+        c.execute("SELECT 1 FROM directories WHERE alias = ?", (alias,))
+        if c.fetchone():
+            print(f"❌ Alias '{alias}' already exists as a directory shortcut.")
+            return 1
+
+        c.execute("""
+            INSERT INTO commands (alias, command, created_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(alias) DO UPDATE SET command = excluded.command
+        """, (alias, command, created))
+
+        print(f"✅ Saved command: {alias} → {command}")
     return 0
 
 
@@ -199,8 +220,10 @@ def list_all(_=None):
         print("─" * 70)
 
         dir_paths = [d['path'] for d in dirs]
-        # Find the longest common starting path
-        common_base = os.path.commonpath(dir_paths) if len(dir_paths) > 1 else os.path.dirname(dir_paths[0])
+        try:
+            common_base = os.path.commonpath(dir_paths) if len(dir_paths) > 1 else os.path.dirname(dir_paths[0])
+        except ValueError:
+            common_base = os.path.expanduser("~")
 
         # Don't show the user's home dir in the common path, replace with ~
         home_dir = os.path.expanduser("~")
@@ -263,12 +286,15 @@ def generate_cd_command(alias):
 
 def run_command(alias, extra_args=None):
     cmd = get_command(alias)
-    if cmd:
-        full = f"{cmd} {' '.join(extra_args)}" if extra_args else cmd
-        print(f"→ Running: {full}")
-        subprocess.run(full, shell=True)
-        return True
-    return False
+    if not cmd:
+        return None  # alias not found
+
+    suffix = f" {shlex.join(extra_args)}" if extra_args else ""
+    full = f"{cmd}{suffix}"
+    print(f"→ Running: {full}")
+
+    result = subprocess.run(full, shell=True)
+    return result.returncode
 
 
 def backup_data(filename=None):
@@ -397,19 +423,29 @@ def restore_data(filename):
 
 def update_me(_=None):
     print("Updating hop2...")
+    tmp = None
     try:
-        data = urllib.request.urlopen(
-            'https://install.hop2.tech'
-        ).read()
+        with urllib.request.urlopen('https://install.hop2.tech', timeout=15) as resp:
+            data = resp.read()
+
         with tempfile.NamedTemporaryFile('wb', delete=False) as f:
             f.write(data)
             tmp = f.name
-        subprocess.run(['bash', tmp])
-        os.unlink(tmp)
+
+        result = subprocess.run(['bash', tmp], check=False)
+        if result.returncode != 0:
+            print(f"❌ Update installer exited with code {result.returncode}")
+            return result.returncode
+
+        print("✅ Update complete.")
         return 0
     except Exception as e:
         print(f"❌ Update failed: {e}")
         return 1
+    finally:
+        if tmp and os.path.exists(tmp):
+            os.unlink(tmp)
+
 
 
 def uninstall_me(_=None):
@@ -448,7 +484,7 @@ def uninstall_me(_=None):
 
     # 3) Clean up shell RC files
     shell_cleaned = []
-    for rc in ['.bashrc', '.zshrc']:
+    for rc in ['.bashrc', '.bash_profile', '.zshrc', '.zprofile']:
         path = os.path.expanduser(f"~/{rc}")
         if not os.path.exists(path):
             continue
@@ -532,28 +568,17 @@ def main():
     args, remainder = parser.parse_known_args()
 
     # Handle top-level flags immediately
-    if args.help:
-        print_help()
-        sys.exit(0)
-
     if args.uninstall:
-        uninstall_me()
-        sys.exit(0)
+        sys.exit(uninstall_me())
 
     if args.update:
-        update_me()
-        sys.exit(0)
+        sys.exit(update_me())
 
     if args.backup:
-        if args.backup is True:
-            backup_data()
-        else:
-            backup_data(args.backup)
-        sys.exit(0)
+        sys.exit(backup_data() if args.backup is True else backup_data(args.backup))
 
     if args.restore:
-        restore_data(args.restore)
-        sys.exit(0)
+        sys.exit(restore_data(args.restore))
 
     # If no remaining args, show help
     if not remainder:
@@ -569,7 +594,7 @@ def main():
         sys.argv[1] = 'list'
         command_to_run = 'list'
 
-    known_subcommands = {'add', 'cmd', 'list', 'rm'}
+    known_subcommands = {'add', 'cmd', 'list', 'rm', 'update'}
     init_db()
 
     # If it's NOT a known subcommand, treat it as a custom alias
@@ -588,8 +613,9 @@ def main():
             print(f"__HOP2_CD:{path}")
             sys.exit(0)
 
-        if run_command(alias, extra_args):
-            sys.exit(0)
+        cmd_rc = run_command(alias, extra_args)
+        if cmd_rc is not None:
+            sys.exit(cmd_rc)
 
         # New emoji for the final "not found" error
         print(f"❌ No shortcut '{alias}' found. Try 'hop2 list'.")
