@@ -12,7 +12,6 @@ A blazingly fast terminal navigator and command aliasing tool, built with Python
 [![GitHub Stars](https://img.shields.io/github/stars/vishukamble/hop2?style=social)](https://github.com/vishukamble/hop2)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-
 ---
 
 ## Features
@@ -29,13 +28,11 @@ A blazingly fast terminal navigator and command aliasing tool, built with Python
 ## 🚀 Installation
 
 Installation is a single command. The script will automatically detect your shell and set everything up.
-
 ```bash
 curl -sL install.hop2.tech | bash
 ```
 
 After the installation, you just need to **reload your shell** for the changes to take effect:
-
 ```bash
 # For Bash
 source ~/.bashrc
@@ -48,10 +45,9 @@ source ~/.zshrc
 
 ## 📖 Usage Guide
 
-``` Directory Shortcuts
+### Directory Shortcuts
 
 The core of `hop2` is making directory navigation instant.
-
 ```bash
 # Go to a deep directory and save it with an alias
 cd ~/work/projects/backend/api/controllers
@@ -67,10 +63,9 @@ h controllers  # You are now in the backend controllers directory
 h buttons      # You are now in the frontend buttons directory
 ```
 
-``` Command Shortcuts
+### Command Shortcuts
 
 Stop typing long commands over and over.
-
 ```bash
 # Create an alias for a complex git log command
 hop2 cmd glog "git log --oneline --graph --all --decorate"
@@ -84,27 +79,27 @@ hop2 cmd bigfiles "find . -type f -printf '%s %p\n' | sort -nr | head -n 10"
 hop2 bigfiles
 ```
 
-``` Managing Your Shortcuts
+### Managing Your Shortcuts
 
 -   **List all shortcuts:** See everything you've saved with a clean, formatted table.
-    ```bash
+```bash
     hop2 list
-    ```
+```
 -   **Remove a shortcut:**
-    ```bash
+```bash
     hop2 rm buttons
-    ```
+```
 
-``` Updating & Uninstalling
+### Updating & Uninstalling
 
 -   **Update to the latest version:**
-    ```bash
+```bash
     hop2 --update
-    ```
+```
 -   **Uninstall `hop2` completely:** This removes the executable, all data, and cleans up your shell configuration file automatically.
-    ```bash
+```bash
     hop2 --uninstall
-    ```
+```
 
 ---
 
