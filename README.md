@@ -48,10 +48,9 @@ source ~/.zshrc
 
 ## 📖 Usage Guide
 
-``` Directory Shortcuts
+### Directory Shortcuts
 
 The core of `hop2` is making directory navigation instant.
-
 ```bash
 # Go to a deep directory and save it with an alias
 cd ~/work/projects/backend/api/controllers
