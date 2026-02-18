@@ -1,310 +1,175 @@
-// Custom cursor functionality
 document.addEventListener('DOMContentLoaded', () => {
-    initializeCustomCursor();
-    initializeAnimations();
-    initializeSmoothScroll();
-    initializeTerminalEffects();
-    initializeParallax();
-    initializeCopyButtons();
-    initializeDotNavigation();
-    initializeLatestCommit();
-    initializeScrollToTop();
+    initVideo();
+    initCopyButtons();
+    initCopyInline();
+    initScrollSpy();
+    initFadeUps();
+    initScrollTop();
+    initLatestCommit();
     updateVisitorCount();
 });
 
-function initializeCustomCursor() {
-    const cursor = document.querySelector('.custom-cursor');
+// ---- VIDEO CONTROLS ----
+function initVideo() {
+    const video = document.getElementById('hop2-video');
+    const playBtn = document.getElementById('play-pause-btn');
+    const muteBtn = document.getElementById('mute-btn');
+    const iconPlay = document.getElementById('icon-play');
+    const iconPause = document.getElementById('icon-pause');
+    const iconMute = document.getElementById('icon-mute');
+    const iconSound = document.getElementById('icon-sound');
 
-    document.addEventListener('mousemove', e => {
-        document.documentElement.style.setProperty(
-            '--cursor-translate',
-            `translate(${e.clientX}px, ${e.clientY}px)`
-        );
-    });
+    if (!video) return;
+    video.volume = 0.2;
 
-    // Hover effects
-    const links = document.querySelectorAll('a, button');
-    links.forEach(link => {
-        link.addEventListener('mouseenter', () =>
-            cursor.classList.add('cursor--big')
-        );
-        link.addEventListener('mouseleave', () =>
-            cursor.classList.remove('cursor--big')
-        );
-    });
-}
-
-function initializeAnimations() {
-    // Fade in animations
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -100px 0px'
-    };
-
-    const observer = new IntersectionObserver(function (entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, observerOptions);
-
-    document.querySelectorAll('.fade-in').forEach(el => {
-        observer.observe(el);
-    });
-}
-
-function initializeSmoothScroll() {
-    // Smooth scroll for navigation (excluding scroll-to-top button)
-    document.querySelectorAll('a[href^="#"]:not(.scroll-to-top)').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({behavior: 'smooth'});
-            }
-        });
-    });
-}
-
-function initializeTerminalEffects() {
-    // Terminal typing effect
-    const terminals = document.querySelectorAll('.terminal pre');
-    terminals.forEach(terminal => {
-        const originalText = terminal.innerHTML;
-        terminal.style.opacity = '0';
-
-        const terminalObserver = new IntersectionObserver(function (entries) {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    terminal.style.opacity = '1';
-                    terminal.style.transition = 'opacity 0.5s ease';
-                    terminalObserver.unobserve(terminal);
-                }
-            });
-        }, {threshold: 0.5});
-
-        terminalObserver.observe(terminal);
-    });
-}
-
-function initializeParallax() {
-    // Parallax effect for hero
-    let ticking = false;
-
-    function updateParallax() {
-        const scrolled = window.pageYOffset;
-        const hero = document.querySelector('.hero');
-        const logo = document.querySelector('.logo');
-
-        if (scrolled < window.innerHeight) {
-            hero.style.transform = `translateY(${scrolled * 0.5}px)`;
-            logo.style.transform = `translateY(${scrolled * -0.3}px) rotate(${scrolled * 0.1}deg)`;
-        }
-
-        ticking = false;
+    function updatePlayIcons() {
+        iconPlay.style.display = video.paused ? '' : 'none';
+        iconPause.style.display = video.paused ? 'none' : '';
+    }
+    function updateMuteIcons() {
+        iconMute.style.display = video.muted ? '' : 'none';
+        iconSound.style.display = video.muted ? 'none' : '';
     }
 
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            requestAnimationFrame(updateParallax);
-            ticking = true;
-        }
+    playBtn?.addEventListener('click', () => {
+        video.paused ? video.play() : video.pause();
+        updatePlayIcons();
     });
+
+    muteBtn?.addEventListener('click', () => {
+        video.muted = !video.muted;
+        updateMuteIcons();
+    });
+
+    // Autoplay/pause based on visibility
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) { video.play(); }
+            else { video.pause(); }
+            updatePlayIcons();
+        });
+    }, { threshold: 0.5 });
+
+    observer.observe(video);
+    updatePlayIcons();
+    updateMuteIcons();
 }
 
-function initializeCopyButtons() {
-    // Copy button functionality
-    document.querySelectorAll('.copy-btn').forEach(button => {
-        button.addEventListener('click', async () => {
-            const pre = button.closest('.terminal').querySelector('pre');
-            let text = pre.innerText;
-
-            // Remove leading '$' and whitespace
-            text = text.replace(/^\$\s*/, '');
-
+// ---- COPY BUTTONS (terminals) ----
+function initCopyButtons() {
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const pre = btn.closest('.terminal').querySelector('pre');
+            let text = pre.innerText.replace(/^\$\s*/gm, '').trim();
             try {
                 await navigator.clipboard.writeText(text);
-
-                button.innerText = '✅';
-                button.classList.add('copied');
-                setTimeout(() => {
-                    button.innerText = '📋';
-                    button.classList.remove('copied');
-                }, 2000);
-            } catch (err) {
-                console.error('Error copying text to clipboard:', err);
-                button.innerText = '❌';
-                setTimeout(() => {
-                    button.innerText = '📋';
-                }, 2000);
+                btn.innerText = '✅';
+                btn.classList.add('copied');
+                setTimeout(() => { btn.innerText = '📋'; btn.classList.remove('copied'); }, 2000);
+            } catch {
+                btn.innerText = '❌';
+                setTimeout(() => { btn.innerText = '📋'; }, 2000);
             }
         });
     });
 }
 
-function initializeDotNavigation() {
-    // Dot Navigation (Scrollspy)
-    const sections = document.querySelectorAll('section[id]');
-    const navLinks = document.querySelectorAll('.dot-nav a');
+// ---- COPY INLINE (install hero) ----
+function initCopyInline() {
+    document.querySelectorAll('.copy-inline').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const text = btn.dataset.copy;
+            try {
+                await navigator.clipboard.writeText(text);
+                btn.classList.add('copied');
+                btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`;
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+                }, 2000);
+            } catch (e) { console.error(e); }
+        });
+    });
+}
 
-    const navObserver = new IntersectionObserver((entries) => {
+// ---- SCROLL SPY for dot nav ----
+function initScrollSpy() {
+    const sections = document.querySelectorAll('section[id]');
+    const dots = document.querySelectorAll('.dot');
+
+    const io = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                const id = entry.target.getAttribute('id');
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${id}`) {
-                        link.classList.add('active');
-                    }
+                const id = entry.target.id;
+                dots.forEach(d => {
+                    d.classList.toggle('active', d.getAttribute('href') === `#${id}`);
                 });
             }
         });
-    }, {threshold: 0.5});
+    }, { threshold: 0.5 });
 
-    sections.forEach(section => navObserver.observe(section));
+    sections.forEach(s => io.observe(s));
+
+    // Smooth scroll on dot click
+    dots.forEach(dot => {
+        dot.addEventListener('click', e => {
+            e.preventDefault();
+            document.querySelector(dot.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' });
+        });
+    });
 }
 
-function initializeLatestCommit() {
-    // Latest Commit Loader
+// ---- FADE UP ANIMATIONS ----
+function initFadeUps() {
+    const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) e.target.classList.add('visible');
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.section-header, .cards-grid, .terminal-grid, .steps, .community-grid, .install-hero').forEach(el => {
+        el.classList.add('fade-up');
+        io.observe(el);
+    });
+}
+
+// ---- SCROLL TO TOP ----
+function initScrollTop() {
+    const btn = document.getElementById('scrollTop');
+    window.addEventListener('scroll', () => {
+        btn?.classList.toggle('visible', window.scrollY > window.innerHeight * 0.4);
+    });
+    btn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+}
+
+// ---- LATEST COMMIT ----
+function initLatestCommit() {
     const msgEl = document.getElementById('commit-message');
     const linkEl = document.getElementById('commit-link');
-
     fetch('https://api.github.com/repos/vishukamble/hop2/commits?per_page=1')
-        .then(res => res.json())
+        .then(r => r.json())
         .then(data => {
-            if (data && data.length > 0) {
-                const commit = data[0];
-                const commitMessage = commit.commit.message.split('\n')[0]; // Get first line of message
-                msgEl.textContent = `Latest: "${commitMessage}"`;
-                linkEl.href = commit.html_url;
+            if (data?.[0]) {
+                const msg = data[0].commit.message.split('\n')[0];
+                msgEl.textContent = `Latest commit: "${msg}"`;
+                linkEl.href = data[0].html_url;
             } else {
-                msgEl.textContent = 'Could not load latest activity.';
+                msgEl.textContent = 'View on GitHub ↗';
             }
+        })
+        .catch(() => { msgEl.textContent = 'View on GitHub ↗'; });
+}
+
+// ---- VISITOR COUNT ----
+function updateVisitorCount() {
+    fetch('https://api.counterapi.dev/v1/hop2-website/count/up')
+        .then(r => r.json())
+        .then(data => {
+            const el = document.getElementById('visitor-count');
+            if (el && data?.count) el.innerText = data.count.toLocaleString('en-US');
         })
         .catch(() => {
-            msgEl.textContent = 'Could not load latest activity.';
+            const el = document.getElementById('visitor-count');
+            if (el) el.innerText = 'N/A';
         });
 }
-
-function initializeScrollToTop() {
-    const scrollToTopButton = document.querySelector('.scroll-to-top');
-    const root = document.documentElement; // Get the <html> element
-
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > window.innerHeight / 2) {
-            scrollToTopButton.classList.add('visible');
-        } else {
-            scrollToTopButton.classList.remove('visible');
-        }
-    });
-
-    scrollToTopButton.addEventListener('click', (e) => {
-        e.preventDefault();
-
-        root.style.scrollSnapType = 'none';
-
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-
-        let scrollTimeout;
-        const scrollListener = () => {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                root.style.scrollSnapType = 'y mandatory';
-                window.removeEventListener('scroll', scrollListener);
-            }, 100);
-        };
-        window.addEventListener('scroll', scrollListener);
-    });
-}
-
-function updateVisitorCount() {
-    const namespace = 'hop2-website';
-    const key = 'count';
-
-    fetch(`https://api.counterapi.dev/v1/${namespace}/${key}/up`)
-        .then(res => res.json())
-        .then(data => {
-            const countElement = document.getElementById('visitor-count');
-            if (countElement) {
-                countElement.innerText = data.count.toLocaleString('en-US');
-            }
-        })
-        .catch(error => {
-            console.error("Visitor count failed:", error);
-            const countElement = document.getElementById('visitor-count');
-            if (countElement) {
-                countElement.innerText = 'N/A';
-            }
-        });
-}
-
-// Wait for the document to be fully loaded before running the script
-document.addEventListener('DOMContentLoaded', () => {
-
-    // --- Get Elements ---
-    const video = document.getElementById('hop2-video');
-    const muteBtn = document.getElementById('mute-btn');
-    const muteIcon = document.getElementById('mute-icon');
-    const playPauseBtn = document.getElementById('play-pause-btn');
-    const playPauseIcon = document.getElementById('play-pause-icon');
-
-    // --- Define Icon Paths ---
-    const volumeOnIconPath = 'assets/img/unmute.svg';
-    const volumeOffIconPath = 'assets/img/mute.svg';
-    const playIconPath = 'assets/img/play.svg';
-    const pauseIconPath = 'assets/img/pause.svg';
-
-    // --- Set Initial Video Volume ---
-    if (video) {
-        video.volume = 0.2;
-    }
-
-    // --- Button Event Listeners ---
-    if (muteBtn) {
-        muteBtn.addEventListener('click', () => {
-            video.muted = !video.muted;
-            muteIcon.src = video.muted ? volumeOffIconPath : volumeOnIconPath;
-        });
-    }
-
-    if (playPauseBtn) {
-        playPauseBtn.addEventListener('click', () => {
-            if (video.paused) {
-                video.play();
-                playPauseIcon.src = img/pause.svg;
-            } else {
-                video.pause();
-                playPauseIcon.src = img/play.svg;
-            }
-        });
-    }
-
-    // --- Intersection Observer Logic ---
-    const observerOptions = {
-      root: null, // observes intersections relative to the viewport
-      threshold: 0.75 // triggers when 75% of the video is visible
-    };
-
-    const videoObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          // Video is visible, play it
-          video.play();
-          playPauseIcon.src = 'img/pause.svg';
-        } else {
-          // Video is not visible, pause it
-          video.pause();
-          playPauseIcon.src = 'img/play.svg';
-        }
-      });
-    }, observerOptions);
-
-    // Start observing the video
-    if (video) {
-      videoObserver.observe(video);
-    }
-});
