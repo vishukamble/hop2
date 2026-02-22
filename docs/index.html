@@ -83,15 +83,14 @@
             </div>
 
             <div class="terminal">
-                <div class="terminal-topbar"><span></span><span></span><span></span></div>
-                <button class="copy-btn" title="Copy">📋</button>
-                <pre><span class="c"># Create command shortcuts</span>
-<span class="p">$</span> <span class="k">hop2 cmd dc "docker-compose"</span>
-<span class="p">$</span> <span class="k">hop2 cmd k "kubectl"</span>
+                <button class="copy-btn" title="Copy to clipboard">📋</button>
+                <pre><span class="comment"># Create command shortcuts</span>
+<span class="prompt">$</span> <span class="command">hop2 cmd kpodswide "kubectl get pods -A --sort-by=.metadata.creationTimestamp -o wide"</span>
+<span class="prompt">$</span> <span class="command">hop2 cmd kevents "kubectl get events -A --sort-by=.metadata.creationTimestamp"</span>
 
-<span class="c"># Use them anywhere</span>
-<span class="p">$</span> <span class="k">hop2 dc up -d</span>
-<span class="p">$</span> <span class="k">hop2 k get pods</span></pre>
+<span class="comment"># Use them anywhere</span>
+<span class="prompt">$</span> <span class="command">hop2 kpodswide</span>
+<span class="prompt">$</span> <span class="command">hop2 kevents</span></pre>
             </div>
         </div>
     </div>
