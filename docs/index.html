@@ -3,298 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-fav.svg"
-          type="image/svgxml">
-    <title>hop2 - Quick directory jumping for your terminal</title>
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrainsMono:wght@400;700&family=Inter:wght@400;600;700;900&display=swap"
-          rel="stylesheet">
-
-    <!-- Styles -->
+    <link rel="icon" href="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-fav.svg">
+    <title>hop2 | Navigate at Terminal Speed</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<!-- Custom cursor -->
-<div class="custom-cursor">〉</div>
+<div class="spotlight"></div>
 
-<!-- Hero Section -->
-<section id="hero" class="section hero">
-    <div class="hero-container">
-        <div class="hero-content">
-            <img src="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-logo.svg" alt="hop2"
-                 class="logo">
-            <h1>hop2</h1>
-            <p class="tagline">Jump anywhere. Run anything. Stay in flow.</p>
-            <div class="cta-buttons">
-                <a href="#demo" class="button">See it in action</a>
-                <a href="https://github.com/vishukamble/hop2" target="_blank" class="button button-outline">View on
-                    GitHub</a>
-            </div>
-        </div>
-        <div class="video-container">
-            <video id="hop2-video" autoplay loop muted playsinline
-                   poster="https://github.com/vishukamble/hop2/releases/download/v1.0.0/_hop2_screen.png">
-                <source src="https://github.com/vishukamble/hop2/releases/download/v1.0.0/hop2_demo.mp4"
-                        type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-
-            <div class="video-controls">
-                <button id="play-pause-btn">
-                    <img id="play-pause-icon" src="img/pause.svg" alt="Pause">
-                </button>
-
-                <button id="mute-btn">
-                    <img id="mute-icon" src="img/mute.svg" alt="Unmute">
-                </button>
-            </div>
+<nav class="glass-nav">
+    <div class="nav-container">
+        <a href="#hero" class="nav-logo-link">
+            <img src="https://raw.githubusercontent.com/vishukamble/hop2/main/assets/logos/hop2-logo-wide.svg"
+                 alt="hop2"
+                 class="nav-logo-img">
+        </a>
+        <div class="nav-links">
+            <a href="#demo">Demo</a>
+            <a href="#features">Features</a>
+            <a href="#install">Install</a>
+            <a href="https://github.com/vishukamble/hop2" target="_blank" class="btn-git">GitHub</a>
         </div>
     </div>
-    <div class="scroll-indicator">
-        <svg viewBox="0 0 24 24">
-            <path d="M7 10l5 5 5-5z"/>
-        </svg>
-    </div>
-</section>
-
-<!-- Demo Section -->
-<section id="demo" class="section demo-section">
-    <div class="demo-content fade-in">
-        <div class="section-header">
-            <h2>Terminal Navigation, Reimagined</h2>
-            <p>Stop typing long paths. Start hopping.</p>
-        </div>
-
-        <div class="terminal-showcase">
-            <div class="terminal">
-                <button class="copy-btn" title="Copy to clipboard">📋</button>
-                <pre><span class="comment"># Old way: Navigate through directories</span>
-<span class="prompt">$</span> <span class="command">cd ../../../projects/frontend/src</span>
-<span class="prompt">$</span> <span class="command">cd components/ui/buttons</span>
-
-<span class="comment"># hop2 way: Jump directly</span>
-<span class="prompt">$</span> <span class="command">hop2 buttons</span>
-<span class="comment">✨ You're there!</span></pre>
-            </div>
-
-            <div class="terminal">
-                <button class="copy-btn" title="Copy to clipboard">📋</button>
-                <pre><span class="comment"># Create command shortcuts</span>
-<span class="prompt">$</span> <span class="command">hop2 cmd dc "docker-compose"</span>
-<span class="prompt">$</span> <span class="command">hop2 cmd k "kubectl"</span>
-
-<span class="comment"># Use them anywhere</span>
-<span class="prompt">$</span> <span class="command">hop2 dc up -d</span>
-<span class="prompt">$</span> <span class="command">hop2 k get pods</span></pre>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="why" class="section features-section">
-    <div class="fade-in">
-        <div class="section-header">
-            <h2>Why Choose hop2?</h2>
-            <p>Designed for a faster, more organized workflow.</p>
-        </div>
-
-        <div class="features-grid">
-            <div class="feature-card">
-                <span class="feature-icon">🗃️</span>
-                <h3>Centralized Storage</h3>
-                <p>Manage all your directory and command shortcuts in a single, portable database file.</p>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">🐚</span>
-                <h3>Cross-Shell Support</h3>
-                <p>Works out of the box in bash, zsh, and other popular shells on Linux & macOS.</p>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">💨</span>
-                <h3>No Reloads Needed</h3>
-                <p>Add or remove shortcuts instantly. Your changes are available in all open terminal sessions without
-                    re-sourcing.</p>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">🖇️</span>
-                <h3>Powerful Aliases</h3>
-                <p>Create shortcuts not just for directories, but for full commands with arguments as well.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Features Section -->
-<section id="features" class="section features-section">
-    <div class="fade-in">
-        <div class="section-header">
-            <h2>Built for Developers</h2>
-            <p>Simple. Fast. Exactly what you need.</p>
-        </div>
-
-        <div class="features-grid">
-            <div class="feature-card">
-                <span class="feature-icon">⚡</span>
-                <h3>Lightning Fast</h3>
-                <p>Zero dependencies. Pure Python. Instant navigation.</p>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">🎯</span>
-                <h3>Dead Simple</h3>
-                <p>No AI. No fuzzy matching. Just aliases that work.</p>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">🔧</span>
-                <h3>Flexible</h3>
-                <p>Directory shortcuts, command aliases, or both.</p>
-            </div>
-
-            <div class="feature-card">
-                <span class="feature-icon">🚀</span>
-                <h3>Shell Native</h3>
-                <p>Works seamlessly with bash and zsh.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Installation Section -->
-<section id="install" class="section install-section">
-    <div class="fade-in">
-        <div class="section-header">
-            <h2>Get Started in 30 Seconds</h2>
-            <p>One command. That's it.</p>
-        </div>
-
-        <div class="install-steps">
-            <div class="step">
-                <div class="step-number">1</div>
-                <div>
-                    <h3>Install hop2</h3>
-                    <div class="terminal copyable">
-                        <button class="copy-btn" title="Copy to clipboard">📋</button>
-                        <pre><span class="prompt">$</span> <span class="command">curl -sL https://install.hop2.tech | bash</span></pre>
-                    </div>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-number">2</div>
-                <div>
-                    <h3>Source your shell</h3>
-                    <div class="terminal copyable">
-                        <button class="copy-btn" title="Copy to clipboard">📋</button>
-                        <pre><span class="prompt">$</span> <span class="command">source ~/.bashrc</span></pre>
-                    </div>
-                </div>
-            </div>
-
-            <div class="step">
-                <div class="step-number">3</div>
-                <div>
-                    <h3>Start hopping!</h3>
-                    <div class="terminal">
-                        <button class="copy-btn" title="Copy to clipboard">📋</button>
-                        <pre><span class="prompt">$</span> <span class="command">hop2 add work</span>    <span
-                                class="comment"># Save current directory</span>
-<span class="prompt">$</span> <span class="command">hop2 work</span>        <span
-                                    class="comment"># Jump back anytime!</span></pre>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Community Section -->
-<section id="community" class="section community-section">
-    <div class="fade-in">
-        <div class="section-header">
-            <h2>Join the Movement</h2>
-            <p>Built by developers, for developers.</p>
-        </div>
-
-        <div class="community-grid">
-            <div class="community-card">
-                <h3>⭐ Star</h3>
-                <p>Show your support and help others discover hop2.</p>
-                <a href="https://github.com/vishukamble/hop2" target="_blank" class="button">Star on GitHub</a>
-            </div>
-
-            <div class="community-card">
-                <h3>💡 Contribute</h3>
-                <p>Have ideas? Found a bug? PRs are always welcome!</p>
-                <a href="https://github.com/vishukamble/hop2/issues" target="_blank" class="button button-outline">Open
-                    an Issue</a>
-            </div>
-
-            <div class="community-card">
-                <h3>🚀 Share</h3>
-                <p>Tell your team about hop2. Better tools for everyone.</p>
-                <a href="https://twitter.com/intent/tweet?text=Check%20out%20hop2%20-%20Quick%20directory%20jumping%20for%20your%20terminal!%20https://github.com/vishukamble/hop2"
-                   target="_blank" class="button button-outline">Tweet</a>
-            </div>
-
-            <div class="community-card">
-                <h3>📚 Learn</h3>
-                <p>Check out our docs for advanced tips and tricks.</p>
-                <a href="https://github.com/vishukamble/hop2#readme" target="_blank" class="button button-outline">Read
-                    Docs</a>
-            </div>
-        </div>
-
-        <div class="latest-commit-info fade-in">
-            <a id="commit-link" href="#" target="_blank">
-                <span id="commit-icon">🔄</span>
-                <span id="commit-message">Loading latest activity...</span>
-            </a>
-        </div>
-    </div>
-
-    <div class="section-footer">
-        <p>Made with <span style="color: var(--accent);">❤️</span> by <a href="https://github.com/vishukamble"
-                                                                         target="_blank"
-                                                                         style="color: var(--accent); text-decoration: none;">vishukamble</a>
-        </p>
-        <p style="margin-top: 1rem; color: #666;">
-            <a href="https://github.com/vishukamble/hop2" target="_blank" style="color: #999; text-decoration: none;">GitHub</a>
-            ·
-            <a href="https://github.com/vishukamble/hop2/issues" target="_blank"
-               style="color: #999; text-decoration: none;">Issues</a>
-            ·
-            <a href="https://github.com/vishukamble/hop2/blob/main/LICENSE" target="_blank"
-               style="color: #999; text-decoration: none;">MIT
-                License</a>
-            .
-            <span style="color: #999;">Visitors: <span id="visitor-count">...</span></span>
-        </p>
-    </div>
-</section>
-
-<nav class="dot-nav">
-    <ul>
-        <li><a href="#hero"></a></li>
-        <li><a href="#demo"></a></li>
-        <li><a href="#why"></a></li>
-        <li><a href="#features"></a></li>
-        <li><a href="#install"></a></li>
-        <li><a href="#community"></a></li>
-    </ul>
 </nav>
 
-<button class="scroll-to-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">^</button>
+<main>
+    <section id="hero" class="hero cinematic">
+    <div class="hero-content centered">
+        <h1>Stop typing. <br><span class="text-gradient">Start hopping.</span></h1>
+        <p class="tagline">The zero-dependency directory jumper for SREs and Devs who move fast.</p>
 
-<!-- Scripts -->
-<script src="script.js"></script>
+        <div class="hero-cta centered">
+            <div class="install-pill" onclick="copyInstall()">
+                <span class="prompt">$</span>
+                <span class="cmd">curl -sL https://install.hop2.tech | bash</span>
+                <span class="copy-hint">Copy</span>
+            </div>
+        </div>
+    </div>
 
+    <div class="hero-visual full-width">
+        <div class="terminal-window cinematic-terminal">
+            <div class="t-bar"><span></span><span></span><span></span><div class="t-title">hop2 demo</div></div>
+            <div class="t-body video-stage">
+                <video autoplay muted loop playsinline>
+                    <source src="https://github.com/vishukamble/hop2/releases/download/v1.0.0/hop2-demo.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <section id="features" class="bento-section">
+        <div class="section-hdr">
+            <h2>Built for the Flow State</h2>
+            <p>High-density features for high-performance engineers.</p>
+        </div>
+
+        <div class="bento-grid">
+            <div class="bento-item tall">
+                <div class="bento-icon">🗃️</div>
+                <h3>Atomic SQLite</h3>
+                <p>Manage all shortcuts in a single, portable database file. Fast and crash-proof.</p>
+                <div class="bento-art">
+                    <div class="db-chip">hop2.db</div>
+                </div>
+            </div>
+
+            <div class="bento-item wide">
+                <div class="bento-icon">🖇️</div>
+                <h3>Powerful Aliasing</h3>
+                <p>Not just paths. Alias full <code>docker</code> or <code>kubectl</code> strings with arguments.</p>
+            </div>
+
+            <div class="bento-item">
+                <div class="bento-icon">🐚</div>
+                <h3>Shell Agnostic</h3>
+                <p>Native support for Bash and Zsh on Linux & macOS.</p>
+            </div>
+
+            <div class="bento-item">
+                <div class="bento-icon">💨</div>
+                <h3>No Reloads</h3>
+                <p>Add a shortcut, use it instantly in every open terminal. No sourcing required.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <section id="install" class="install-section">
+        <div class="container">
+            <div class="get-started-content">
+                <h2>Get Started</h2>
+
+                <div class="install-pill" onclick="copyInstall()">
+                    <code style="color: var(--text);">
+                        <span class="prompt">$</span> curl -sL https://install.hop2.tech | bash
+                    </code>
+                    <span class="copy-hint"
+                          style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px;">Copy</span>
+                </div>
+
+                <div id="commit-message" class="latest-activity"
+                     style="font-family: var(--mono); font-size: 0.85rem; color: var(--text-dim);">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <p>Made with ⚡ by <a href="https://github.com/vishukamble"
+                                 style="color: var(--accent); text-decoration: none; font-weight: 600;">vishukamble</a>
+            </p>
+        </div>
+    </footer>
+
+    <div id="toast"></div>
+    <script src="script.js"></script>
 </body>
 </html>
