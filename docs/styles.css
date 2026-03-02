@@ -239,6 +239,62 @@ h1 {
     margin-left: 20px;
 }
 
+/* Example */
+/* --- EXAMPLES SECTION --- */
+.examples-section {
+    padding: 100px 0;
+    background: linear-gradient(180deg, var(--bg) 0%, #080a0c 100%);
+}
+
+.example-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.example-label {
+    font-family: var(--mono);
+    font-size: 1rem;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+}
+
+.terminal-mini {
+    background: #0d0f12;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    height: 100%;
+}
+
+.terminal-mini pre {
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+}
+
+/* --- MOBILE FIXES FOR SHOWCASE --- */
+@media (max-width: 768px) {
+    .example-grid {
+        grid-template-columns: 1fr; /* Stack terminals on mobile */
+        gap: 30px;
+        padding: 0 10px;
+    }
+
+    .terminal-mini {
+        padding: 16px;
+    }
+
+    .terminal-mini pre {
+        font-size: 0.8rem; /* Smaller text for narrow screens */
+    }
+}
+
 /* Bento Grid */
 .bento-section {
     max-width: 1200px;
@@ -249,6 +305,20 @@ h1 {
 .section-hdr {
     text-align: center;
     margin-bottom: 60px;
+}
+
+.section-hdr h2 {
+    font-size: 2.8rem; /* Scaled up from ~2rem */
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    margin-bottom: 12px;
+}
+
+.section-hdr p {
+    font-size: 1.2rem; /* Bumped from ~1rem */
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .bento-grid {
