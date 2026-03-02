@@ -239,6 +239,62 @@ h1 {
     margin-left: 20px;
 }
 
+/* Example */
+/* --- EXAMPLES SECTION --- */
+.examples-section {
+    padding: 100px 0;
+    background: linear-gradient(180deg, var(--bg) 0%, #080a0c 100%);
+}
+
+.example-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.example-label {
+    font-family: var(--mono);
+    font-size: 1rem;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+    letter-spacing: 2px;
+}
+
+.terminal-mini {
+    background: #0d0f12;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    height: 100%;
+}
+
+.terminal-mini pre {
+    font-family: var(--mono);
+    font-size: 1rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+}
+
+/* --- MOBILE FIXES FOR SHOWCASE --- */
+@media (max-width: 768px) {
+    .example-grid {
+        grid-template-columns: 1fr; /* Stack terminals on mobile */
+        gap: 30px;
+        padding: 0 10px;
+    }
+
+    .terminal-mini {
+        padding: 16px;
+    }
+
+    .terminal-mini pre {
+        font-size: 0.8rem; /* Smaller text for narrow screens */
+    }
+}
+
 /* Bento Grid */
 .bento-section {
     max-width: 1200px;
@@ -249,6 +305,20 @@ h1 {
 .section-hdr {
     text-align: center;
     margin-bottom: 60px;
+}
+
+.section-hdr h2 {
+    font-size: 2.8rem; /* Scaled up from ~2rem */
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    margin-bottom: 12px;
+}
+
+.section-hdr p {
+    font-size: 1.2rem; /* Bumped from ~1rem */
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .bento-grid {
@@ -461,4 +531,76 @@ h1 {
     font-size: 0.9rem;
     color: var(--text-dim);
     text-align: center;
+}
+
+/* --- RESPONSIVE MOBILE OVERRIDES --- */
+
+@media (max-width: 768px) {
+    /* 1. Hero Adjustments */
+    .hero.cinematic {
+        padding-top: 100px;
+        gap: 30px;
+    }
+
+    h1 {
+        font-size: 2.5rem; /* Shorter titles for mobile */
+        letter-spacing: -1px;
+    }
+
+    .tagline {
+        font-size: 1rem;
+        padding: 0 10px;
+    }
+
+    /* 2. Bento Grid Collapse - This is the main fix */
+    .bento-grid {
+        grid-template-columns: 1fr; /* Force 1 column */
+        grid-auto-rows: auto; /* Let content determine height */
+        gap: 16px;
+    }
+
+    .bento-item.tall,
+    .bento-item.wide {
+        grid-row: span 1;
+        grid-column: span 1;
+    }
+
+    .bento-item {
+        padding: 24px;
+        min-height: 160px;
+    }
+
+    /* 3. Navigation Tweaks */
+    .nav-links {
+        display: none; /* Hide desktop links, consider a hamburger menu later */
+    }
+
+    .nav-container {
+        justify-content: center; /* Center logo on mobile */
+    }
+
+    /* 4. Video Stage Scaling */
+    .hero-visual.full-width {
+        max-width: 100%;
+        padding-bottom: 40px;
+    }
+
+    /* 5. Install Pill Wrapping */
+    .install-pill {
+        padding: 12px 16px;
+        font-size: 0.8rem;
+        width: 90%; /* Take up most of the screen width */
+        justify-content: center;
+    }
+
+    .install-pill code {
+        word-break: break-all; /* Prevent horizontal overflow */
+        white-space: normal;
+    }
+}
+
+@media (max-width: 768px) {
+    .spotlight {
+        display: none; /* Mouse tracking doesn't exist on touch screens */
+    }
 }
