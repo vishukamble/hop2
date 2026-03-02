@@ -29,31 +29,76 @@
 
 <main>
     <section id="hero" class="hero cinematic">
-    <div class="hero-content centered">
-        <h1>Stop typing. <br><span class="text-gradient">Start hopping.</span></h1>
-        <p class="tagline">The zero-dependency directory jumper for SREs and Devs who move fast.</p>
+        <div class="hero-content centered">
+            <h1>Stop typing. <br><span class="text-gradient">Start hopping.</span></h1>
+            <p class="tagline">The zero-dependency directory jumper for SREs and Devs who move fast.</p>
 
-        <div class="hero-cta centered">
-            <div class="install-pill" onclick="copyInstall()">
-                <span class="prompt">$</span>
-                <span class="cmd">curl -sL https://install.hop2.tech | bash</span>
-                <span class="copy-hint">Copy</span>
+            <div class="hero-cta centered">
+                <div class="install-pill" onclick="copyInstall()">
+                    <span class="prompt">$</span>
+                    <span class="cmd">curl -sL https://install.hop2.tech | bash</span>
+                    <span class="copy-hint">Copy</span>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="hero-visual full-width">
-        <div class="terminal-window cinematic-terminal">
-            <div class="t-bar"><span></span><span></span><span></span><div class="t-title">hop2 demo</div></div>
-            <div class="t-body video-stage">
-                <video autoplay muted loop playsinline>
-                    <source src="https://github.com/vishukamble/hop2/releases/download/v1.0.0/hop2-demo.mp4" type="video/mp4">
-                    Your browser does not support the video tag.
-                </video>
+        <div class="hero-visual full-width">
+            <div class="terminal-window cinematic-terminal">
+                <div class="t-bar"><span></span><span></span><span></span>
+                    <div class="t-title">hop2 demo</div>
+                </div>
+                <div class="t-body video-stage">
+                    <video autoplay muted loop playsinline>
+                        <source src="https://github.com/vishukamble/hop2/releases/download/v1.0.0/hop2-demo.mp4"
+                                type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+
+
+    <section id="demo-examples" class="examples-section">
+        <div class="container">
+            <div class="section-hdr">
+                <h2>The hop2 Workflow</h2>
+                <p>Save hours of typing by aliasing your most frequent paths and scripts.</p>
+            </div>
+
+            <div class="example-grid">
+                <div class="example-card">
+                    <div class="example-label">1. Directory Jumps</div>
+                    <div class="terminal-mini">
+                        <div class="t-body">
+                        <pre><span class="comment"># Add your project root</span>
+<span class="prompt">$</span> hop2 add work ~/dev/centralus/infra-core
+<span class="success">✅ Added 'work'</span>
+
+<span class="comment"># Jump there from anywhere</span>
+<span class="prompt">$</span> hop2 work
+<span class="success">🚀 Switched to ~/dev/centralus/infra-core</span></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="example-card">
+                    <div class="example-label">2. Command Aliases</div>
+                    <div class="terminal-mini">
+                        <div class="t-body">
+                        <pre><span class="comment"># Alias a complex kubectl command</span>
+<span class="prompt">$</span> hop2 cmd logs "kubectl logs -f -l app=nginx"
+<span class="success">✅ Alias 'logs' created</span>
+
+<span class="comment"># Run it instantly</span>
+<span class="prompt">$</span> hop2 logs
+<span class="comment">... (streaming logs)</span></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <section id="features" class="bento-section">
         <div class="section-hdr">
