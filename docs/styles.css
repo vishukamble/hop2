@@ -462,3 +462,75 @@ h1 {
     color: var(--text-dim);
     text-align: center;
 }
+
+/* --- RESPONSIVE MOBILE OVERRIDES --- */
+
+@media (max-width: 768px) {
+    /* 1. Hero Adjustments */
+    .hero.cinematic {
+        padding-top: 100px;
+        gap: 30px;
+    }
+
+    h1 {
+        font-size: 2.5rem; /* Shorter titles for mobile */
+        letter-spacing: -1px;
+    }
+
+    .tagline {
+        font-size: 1rem;
+        padding: 0 10px;
+    }
+
+    /* 2. Bento Grid Collapse - This is the main fix */
+    .bento-grid {
+        grid-template-columns: 1fr; /* Force 1 column */
+        grid-auto-rows: auto; /* Let content determine height */
+        gap: 16px;
+    }
+
+    .bento-item.tall,
+    .bento-item.wide {
+        grid-row: span 1;
+        grid-column: span 1;
+    }
+
+    .bento-item {
+        padding: 24px;
+        min-height: 160px;
+    }
+
+    /* 3. Navigation Tweaks */
+    .nav-links {
+        display: none; /* Hide desktop links, consider a hamburger menu later */
+    }
+
+    .nav-container {
+        justify-content: center; /* Center logo on mobile */
+    }
+
+    /* 4. Video Stage Scaling */
+    .hero-visual.full-width {
+        max-width: 100%;
+        padding-bottom: 40px;
+    }
+
+    /* 5. Install Pill Wrapping */
+    .install-pill {
+        padding: 12px 16px;
+        font-size: 0.8rem;
+        width: 90%; /* Take up most of the screen width */
+        justify-content: center;
+    }
+
+    .install-pill code {
+        word-break: break-all; /* Prevent horizontal overflow */
+        white-space: normal;
+    }
+}
+
+@media (max-width: 768px) {
+    .spotlight {
+        display: none; /* Mouse tracking doesn't exist on touch screens */
+    }
+}
