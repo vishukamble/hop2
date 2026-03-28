@@ -200,17 +200,30 @@ def list_all(_=None):
 
         dir_paths = [d['path'] for d in dirs]
         # Find the longest common starting path
-        common_base = os.path.commonpath(dir_paths) if len(dir_paths) > 1 else os.path.dirname(dir_paths[0])
+        # os.path.commonpath raises ValueError on Windows when paths span drives
+        try:
+            common_base = os.path.commonpath(dir_paths) if len(dir_paths) > 1 else os.path.dirname(dir_paths[0])
+        except ValueError:
+            common_base = None
 
-        # Don't show the user's home dir in the common path, replace with ~
         home_dir = os.path.expanduser("~")
-        display_base = f"~{common_base[len(home_dir):]}" if common_base.startswith(home_dir) else common_base
-        print(f"🌲 Common Root: {display_base}/\n")
 
-        for d in dirs:
-            # Show the part of the path that is *not* common
-            relative_path = os.path.relpath(d['path'], common_base)
-            print(f"  {d['alias']:<15} → ./{relative_path:<40} ({d['uses']} uses)")
+        if common_base:
+            # Use normcase for case-insensitive comparison on Windows
+            if os.path.normcase(common_base).startswith(os.path.normcase(home_dir)):
+                display_base = f"~{common_base[len(home_dir):]}"
+            else:
+                display_base = common_base
+            print(f"🌲 Common Root: {display_base}/\n")
+
+            for d in dirs:
+                relative_path = os.path.relpath(d['path'], common_base)
+                print(f"  {d['alias']:<15} → ./{relative_path:<40} ({d['uses']} uses)")
+        else:
+            # Paths span multiple drives — show full paths
+            print()
+            for d in dirs:
+                print(f"  {d['alias']:<15} → {d['path']:<45} ({d['uses']} uses)")
 
         # The 'r' before the """ fixes the SyntaxWarning
         print(r"""
@@ -397,19 +410,140 @@ def restore_data(filename):
 
 def update_me(_=None):
     print("Updating hop2...")
+    tmp = None
     try:
-        data = urllib.request.urlopen(
-            'https://install.hop2.tech'
-        ).read()
-        with tempfile.NamedTemporaryFile('wb', delete=False) as f:
-            f.write(data)
-            tmp = f.name
-        subprocess.run(['bash', tmp])
-        os.unlink(tmp)
+        if sys.platform == 'win32':
+            url = 'https://raw.githubusercontent.com/vishukamble/hop2/main/install.ps1'
+            data = urllib.request.urlopen(url).read()
+            with tempfile.NamedTemporaryFile('wb', suffix='.ps1', delete=False) as f:
+                f.write(data)
+                tmp = f.name
+            subprocess.run(['powershell', '-ExecutionPolicy', 'Bypass', '-File', tmp])
+        else:
+            data = urllib.request.urlopen('https://install.hop2.tech').read()
+            with tempfile.NamedTemporaryFile('wb', delete=False) as f:
+                f.write(data)
+                tmp = f.name
+            subprocess.run(['bash', tmp])
         return 0
     except Exception as e:
         print(f"❌ Update failed: {e}")
         return 1
+    finally:
+        if tmp and os.path.exists(tmp):
+            os.unlink(tmp)
+
+
+def _get_windows_documents():
+    """Get the actual Documents folder path, handling OneDrive redirection."""
+    try:
+        import winreg
+        with winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r'SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders'
+        ) as key:
+            docs_raw, _ = winreg.QueryValueEx(key, 'Personal')
+            return os.path.expandvars(docs_raw)
+    except Exception:
+        return str(Path.home() / 'Documents')
+
+
+def _get_windows_ps_profiles():
+    """Return candidate PowerShell profile paths for PS 5.1 and PS 7+."""
+    docs = _get_windows_documents()
+    return [
+        os.path.join(docs, 'WindowsPowerShell', 'Microsoft.PowerShell_profile.ps1'),  # PS 5.1
+        os.path.join(docs, 'PowerShell', 'Microsoft.PowerShell_profile.ps1'),         # PS 7+
+    ]
+
+
+def _windows_remove_from_user_path(target_dir, errors):
+    """Remove *target_dir* from the HKCU user PATH. Returns True if changed."""
+    try:
+        import winreg
+        with winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER, r'Environment', 0,
+            winreg.KEY_READ | winreg.KEY_WRITE
+        ) as key:
+            try:
+                current, _ = winreg.QueryValueEx(key, 'PATH')
+            except FileNotFoundError:
+                current = ''
+            parts = [p for p in current.split(';') if p.strip()]
+            norm_target = os.path.normcase(target_dir.rstrip('\\'))
+            new_parts = [p for p in parts if os.path.normcase(p.rstrip('\\')) != norm_target]
+            if len(new_parts) < len(parts):
+                winreg.SetValueEx(key, 'PATH', 0, winreg.REG_EXPAND_SZ, ';'.join(new_parts))
+                return True
+    except Exception as e:
+        errors.append(f"Couldn't update user PATH: {e}")
+    return False
+
+
+def _clean_ps_profile(path, errors):
+    """Remove hop2 integration lines from a PowerShell profile. Returns True if changed."""
+    if not os.path.exists(path):
+        return False
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        new_lines = []
+        skip_next = False
+        for i, line in enumerate(lines):
+            stripped = line.strip()
+            # Comment sentinel
+            if stripped == '# hop2 shell integration':
+                next_line = lines[i + 1].strip() if i + 1 < len(lines) else ''
+                if '.hop2' in next_line.lower() and 'init.ps1' in next_line.lower():
+                    skip_next = True
+                continue
+            # Source line following the comment
+            if skip_next and '.hop2' in stripped.lower() and 'init.ps1' in stripped.lower():
+                skip_next = False
+                continue
+            # Standalone source line (comment was manually removed)
+            if '.hop2' in stripped.lower() and 'init.ps1' in stripped.lower():
+                continue
+            new_lines.append(line)
+
+        with open(path, 'w', encoding='utf-8') as f:
+            f.writelines(new_lines)
+        return True
+    except Exception as e:
+        errors.append(f"Failed to clean {path}: {e}")
+    return False
+
+
+def _clean_unix_rc(rc_filename, errors):
+    """Remove hop2 integration lines from a bash/zsh RC file. Returns True if changed."""
+    path = os.path.expanduser(f"~/{rc_filename}")
+    if not os.path.exists(path):
+        return False
+    try:
+        with open(path, 'r') as f:
+            lines = f.readlines()
+
+        new_lines = []
+        skip_next = False
+        for i, line in enumerate(lines):
+            if line.strip() == '# hop2 shell integration':
+                if i + 1 < len(lines) and lines[i + 1].strip() == 'source ~/.hop2/init.sh':
+                    skip_next = True
+                continue
+            if skip_next and line.strip() == 'source ~/.hop2/init.sh':
+                skip_next = False
+                continue
+            if line.strip() == 'source ~/.hop2/init.sh':
+                continue
+            new_lines.append(line)
+
+        with open(path, 'w') as f:
+            f.writelines(new_lines)
+        return True
+    except Exception as e:
+        errors.append(f"Failed to clean {rc_filename}: {e}")
+    return False
 
 
 def uninstall_me(_=None):
@@ -423,22 +557,34 @@ def uninstall_me(_=None):
 
     print("\n📦 Uninstalling hop2...\n")
 
-    removed_from = []
     errors = []
-
-    # 1) Remove hop2 executable from common install locations
-    for d in ['/usr/local/bin', os.path.expanduser('~/.local/bin'), os.path.expanduser('~/bin')]:
-        p = os.path.join(d, 'hop2')
-        if os.path.exists(p):
-            try:
-                os.remove(p)
-                removed_from.append(d)
-            except OSError as e:
-                errors.append(f"Couldn't remove from {d}: {e}")
-
-    # 2) Remove ~/.hop2 data directory
-    hop2_dir = os.path.expanduser('~/.hop2')
+    removed_from = []
+    path_cleaned = False
     dir_removed = False
+    shell_cleaned = []
+
+    # ------------------------------------------------------------------ #
+    # 1) Remove executable / PATH entry (platform-specific)              #
+    # ------------------------------------------------------------------ #
+    if sys.platform == 'win32':
+        bin_dir = str(Path.home() / '.hop2' / 'bin')
+        path_cleaned = _windows_remove_from_user_path(bin_dir, errors)
+        if path_cleaned:
+            removed_from.append(bin_dir)
+    else:
+        for d in ['/usr/local/bin', os.path.expanduser('~/.local/bin'), os.path.expanduser('~/bin')]:
+            p = os.path.join(d, 'hop2')
+            if os.path.exists(p):
+                try:
+                    os.remove(p)
+                    removed_from.append(d)
+                except OSError as e:
+                    errors.append(f"Couldn't remove from {d}: {e}")
+
+    # ------------------------------------------------------------------ #
+    # 2) Remove ~/.hop2 data directory (cross-platform)                  #
+    # ------------------------------------------------------------------ #
+    hop2_dir = os.path.expanduser('~/.hop2')
     if os.path.isdir(hop2_dir):
         try:
             shutil.rmtree(hop2_dir)
@@ -446,57 +592,38 @@ def uninstall_me(_=None):
         except OSError as e:
             errors.append(f"Couldn't remove {hop2_dir}: {e}")
 
-    # 3) Clean up shell RC files
-    shell_cleaned = []
-    for rc in ['.bashrc', '.zshrc']:
-        path = os.path.expanduser(f"~/{rc}")
-        if not os.path.exists(path):
-            continue
+    # ------------------------------------------------------------------ #
+    # 3) Clean shell configs (platform-specific)                         #
+    # ------------------------------------------------------------------ #
+    if sys.platform == 'win32':
+        for ps_profile in _get_windows_ps_profiles():
+            if _clean_ps_profile(ps_profile, errors):
+                shell_cleaned.append(os.path.basename(os.path.dirname(ps_profile)))
+    else:
+        for rc in ['.bashrc', '.zshrc']:
+            if _clean_unix_rc(rc, errors):
+                shell_cleaned.append(rc)
 
-        # Remove hop2 integration lines (both comment and source)
-        try:
-            with open(path, 'r') as f:
-                lines = f.readlines()
+    # ------------------------------------------------------------------ #
+    # 4) Final report                                                     #
+    # ------------------------------------------------------------------ #
+    if sys.platform == 'win32':
+        exe_label  = "Removed ~/.hop2/bin from user PATH     "
+        cfg_label  = "Cleaned PowerShell profile(s)          "
+        reload_msg = "Please open a new PowerShell window to complete uninstallation."
+        manual_msg = "  . $PROFILE"
+    else:
+        exe_label  = "Removed hop2 executable                "
+        cfg_label  = "Cleaned shell config (.bashrc/.zshrc)  "
+        reload_msg = "Please restart your shell to complete uninstallation."
+        manual_msg = "    source ~/.hop2/init.sh"
 
-            new_lines = []
-            skip_next = False
-
-            for i, line in enumerate(lines):
-                # Check if this is the hop2 comment line
-                if line.strip() == '# hop2 shell integration':
-                    # Check if the next line is the source command
-                    if i + 1 < len(lines) and lines[i + 1].strip() == 'source ~/.hop2/init.sh':
-                        skip_next = True  # Skip both this line and the next
-                        continue
-                    # If it's just an orphaned comment, skip it
-                    continue
-
-                # Skip the source line if it follows the comment
-                if skip_next and line.strip() == 'source ~/.hop2/init.sh':
-                    skip_next = False
-                    continue
-
-                # Also skip any standalone source line (in case comment was manually removed)
-                if line.strip() == 'source ~/.hop2/init.sh':
-                    continue
-
-                new_lines.append(line)
-
-            # Write back the cleaned content
-            with open(path, 'w') as f:
-                f.writelines(new_lines)
-
-            shell_cleaned.append(rc)
-        except Exception as e:
-            errors.append(f"Failed to clean {rc}: {e}")
-
-    # 4) Final report
     print("┌──────────────────────────────────────────╥────────┐")
     print("│ Action                                   ║ Status │")
     print("╞══════════════════════════════════════════╫════════╡")
-    print(f"│ Removed hop2 executable                  ║ {'✅' if removed_from else 'n/a'}    │")
+    print(f"│ {exe_label} ║ {'✅' if removed_from else 'n/a'}    │")
     print(f"│ Removed ~/.hop2 data directory           ║ {'✅' if dir_removed else 'n/a'}    │")
-    print(f"│ Cleaned shell config (.bashrc/.zshrc)    ║ {'✅' if shell_cleaned else 'n/a'}    │")
+    print(f"│ {cfg_label} ║ {'✅' if shell_cleaned else 'n/a'}    │")
     print("└──────────────────────────────────────────╨────────┘\n")
 
     if errors:
@@ -507,11 +634,11 @@ def uninstall_me(_=None):
 
     print("✅ hop2 has been uninstalled.")
     if not shell_cleaned:
-        print("⚠️  Manual cleanup required: remove")
-        print("    source ~/.hop2/init.sh")
-        print("  from your shell RC file.\n")
+        print("⚠️  Manual cleanup required: remove the hop2 integration line")
+        print(f"  {manual_msg}")
+        print("  from your shell config.\n")
 
-    print("Please restart your shell to complete uninstallation.")
+    print(reload_msg)
     return 0
 
 

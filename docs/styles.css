@@ -56,6 +56,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
+    justify-content: space-between;
     align-items: center;
     height: 100%;
     padding: 0 24px;
@@ -71,6 +72,7 @@ body {
 .nav-links {
     margin-left: auto;
     display: flex;
+    align-items: center;
     gap: 32px;
     font-size: 0.9rem;
 }
@@ -85,7 +87,6 @@ body {
     color: var(--accent);
 }
 
-/* REPLACED: Updated Navigation Logo Styles */
 .nav-logo-link {
     display: flex;
     align-items: center;
@@ -94,22 +95,28 @@ body {
 }
 
 .nav-logo-link:hover {
-    transform: translateY(-1px); /* Subtle 'hop' on hover */
+    transform: translateY(-1px);
 }
 
 .nav-logo-img {
-    height: 28px; /* Perfectly balanced for 70px nav height */
+    height: 28px;
     width: auto;
     display: block;
-    /* Optional: filter to make it pop against the dark background if needed */
     filter: drop-shadow(0 0 8px rgba(0, 255, 136, 0.2));
 }
 
-/* Ensure the nav-links stay perfectly aligned with the image center */
-.nav-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.btn-git {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.btn-git:hover {
+    border-color: var(--accent);
+    color: var(--accent) !important;
 }
 
 /* Hero Section */
@@ -132,11 +139,11 @@ body {
 .hero-visual {
     flex: 1.2;
 }
-/* REPLACED: Cinematic Hero Alignment */
+
 .hero.cinematic {
-    flex-direction: column; /* Stack vertically */
+    flex-direction: column;
     padding-top: 140px;
-    height: auto; /* Let content determine height */
+    height: auto;
     min-height: 100vh;
     gap: 60px;
 }
@@ -152,10 +159,9 @@ body {
     margin-top: 20px;
 }
 
-/* THE STAGE: Make the video massive */
 .hero-visual.full-width {
     width: 100%;
-    max-width: 1100px; /* Expands the video stage */
+    max-width: 1100px;
     margin: 0 auto;
     padding-bottom: 80px;
 }
@@ -163,7 +169,7 @@ body {
 .cinematic-terminal {
     width: 100%;
     background: #000;
-    box-shadow: 0 0 100px rgba(0, 255, 136, 0.15), 0 40px 100px rgba(0,0,0,0.8);
+    box-shadow: 0 0 100px rgba(0, 255, 136, 0.15), 0 40px 100px rgba(0, 0, 0, 0.8);
     border: 1px solid var(--border);
 }
 
@@ -189,6 +195,7 @@ body {
     border-bottom-right-radius: 12px;
 }
 
+/* Typography */
 h1 {
     font-size: 4.5rem;
     font-weight: 800;
@@ -208,23 +215,29 @@ h1 {
     color: var(--text-dim);
     margin-bottom: 40px;
     max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
+/* Install Pill */
 .install-pill {
     background: var(--surface);
     border: 1px solid var(--border);
-    padding: 12px 20px;
+    padding: 14px 24px;
     border-radius: 12px;
     font-family: var(--mono);
+    font-size: 0.9rem;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 12px;
-    transition: 0.3s;
+    gap: 16px;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: fit-content;
 }
 
 .install-pill:hover {
     border-color: var(--accent);
+    background: rgba(0, 255, 136, 0.05);
     transform: translateY(-2px);
 }
 
@@ -235,12 +248,58 @@ h1 {
 .copy-hint {
     font-size: 0.7rem;
     text-transform: uppercase;
+    letter-spacing: 1px;
     color: var(--text-dim);
-    margin-left: 20px;
+    margin-left: 8px;
+    border: 1px solid var(--border);
+    padding: 4px 8px;
+    border-radius: 6px;
+    opacity: 0.5;
+    transition: 0.2s;
 }
 
-/* Example */
-/* --- EXAMPLES SECTION --- */
+.install-pill:hover .copy-hint {
+    opacity: 1;
+    border-color: var(--accent);
+}
+
+/* OS Toggle */
+.install-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.os-toggle {
+    display: inline-flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.os-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    padding: 8px 20px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    transition: 0.2s;
+}
+
+.os-btn:hover {
+    color: var(--text);
+}
+
+.os-btn.active {
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+/* Examples Section */
 .examples-section {
     padding: 100px 0;
     background: linear-gradient(180deg, var(--bg) 0%, #080a0c 100%);
@@ -267,7 +326,7 @@ h1 {
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 24px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     height: 100%;
 }
 
@@ -278,21 +337,12 @@ h1 {
     white-space: pre-wrap;
 }
 
-/* --- MOBILE FIXES FOR SHOWCASE --- */
-@media (max-width: 768px) {
-    .example-grid {
-        grid-template-columns: 1fr; /* Stack terminals on mobile */
-        gap: 30px;
-        padding: 0 10px;
-    }
+.terminal-mini .comment {
+    color: #6a737d;
+}
 
-    .terminal-mini {
-        padding: 16px;
-    }
-
-    .terminal-mini pre {
-        font-size: 0.8rem; /* Smaller text for narrow screens */
-    }
+.terminal-mini .success {
+    color: var(--accent);
 }
 
 /* Bento Grid */
@@ -308,14 +358,14 @@ h1 {
 }
 
 .section-hdr h2 {
-    font-size: 2.8rem; /* Scaled up from ~2rem */
+    font-size: 2.8rem;
     font-weight: 800;
     letter-spacing: -1.5px;
     margin-bottom: 12px;
 }
 
 .section-hdr p {
-    font-size: 1.2rem; /* Bumped from ~1rem */
+    font-size: 1.2rem;
     color: var(--text-dim);
     max-width: 600px;
     margin: 0 auto;
@@ -369,6 +419,22 @@ h1 {
     font-size: 0.95rem;
 }
 
+.bento-art {
+    margin-top: 20px;
+}
+
+.db-chip {
+    display: inline-block;
+    background: rgba(0, 255, 136, 0.08);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    padding: 6px 16px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+}
+
 /* Terminal Window */
 .terminal-window {
     background: #11141a;
@@ -408,6 +474,7 @@ h1 {
     font-family: var(--mono);
 }
 
+/* Toast */
 #toast {
     position: fixed;
     bottom: 24px;
@@ -426,57 +493,7 @@ h1 {
     transform: translateY(0);
 }
 
-/* REPLACED: Updated Footer & Get Started Alignment */
-.install-section {
-    width: 100%;
-    max-width: 1200px;
-    margin: 80px auto 0;
-    padding: 40px 24px;
-    border-top: 1px solid var(--border); /* Visual separator */
-}
-
-.get-started-content {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* Aligns text to the left */
-    gap: 16px;
-    width: 100%;
-}
-
-.install-pill {
-    display: flex;
-    align-items: center;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-family: var(--mono);
-    font-size: 0.9rem;
-    width: fit-content; /* Prevents stretching */
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.install-pill:hover {
-    border-color: var(--accent);
-}
-
-.latest-activity {
-    font-size: 0.8rem;
-    color: var(--text-dim);
-    font-family: var(--mono);
-}
-
-.footer {
-    padding: 40px 24px;
-    text-align: left; /* Keeps consistency with 'Get Started' */
-    max-width: 1200px;
-    margin: 0 auto;
-    font-size: 0.85rem;
-    color: var(--text-dim);
-}
-
-/* Unified Container to keep everything aligned */
+/* Container */
 .container {
     max-width: 1200px;
     margin: 0 auto;
@@ -484,10 +501,12 @@ h1 {
     width: 100%;
 }
 
+/* Install Section */
 .install-section {
     width: 100%;
-    margin-top: 100px;
-    padding-top: 60px;
+    max-width: 1200px;
+    margin: 100px auto 0;
+    padding: 60px 24px 40px;
     border-top: 1px solid var(--border);
 }
 
@@ -496,6 +515,7 @@ h1 {
     flex-direction: column;
     align-items: center;
     gap: 20px;
+    width: 100%;
 }
 
 .get-started-content h2 {
@@ -504,46 +524,35 @@ h1 {
     margin: 0;
 }
 
-/* Fixed installation pill to prevent stretching */
-.install-pill {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 14px 24px;
-    border-radius: 12px;
+.latest-activity {
+    font-size: 0.8rem;
+    color: var(--text-dim);
     font-family: var(--mono);
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 16px;
-    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    width: fit-content;
 }
 
-.install-pill:hover {
-    border-color: var(--accent);
-    background: rgba(0, 255, 136, 0.05);
-}
-
-/* Footer alignment */
+/* Footer */
 .footer {
     padding: 60px 0;
-    margin-top: 40px;
+    margin: 40px auto 0;
+    max-width: 1200px;
     font-size: 0.9rem;
     color: var(--text-dim);
     text-align: center;
 }
 
-/* --- RESPONSIVE MOBILE OVERRIDES --- */
-
+/* Responsive */
 @media (max-width: 768px) {
-    /* 1. Hero Adjustments */
+    .spotlight {
+        display: none;
+    }
+
     .hero.cinematic {
         padding-top: 100px;
         gap: 30px;
     }
 
     h1 {
-        font-size: 2.5rem; /* Shorter titles for mobile */
+        font-size: 2.5rem;
         letter-spacing: -1px;
     }
 
@@ -552,10 +561,9 @@ h1 {
         padding: 0 10px;
     }
 
-    /* 2. Bento Grid Collapse - This is the main fix */
     .bento-grid {
-        grid-template-columns: 1fr; /* Force 1 column */
-        grid-auto-rows: auto; /* Let content determine height */
+        grid-template-columns: 1fr;
+        grid-auto-rows: auto;
         gap: 16px;
     }
 
@@ -570,37 +578,46 @@ h1 {
         min-height: 160px;
     }
 
-    /* 3. Navigation Tweaks */
     .nav-links {
-        display: none; /* Hide desktop links, consider a hamburger menu later */
+        display: none;
     }
 
     .nav-container {
-        justify-content: center; /* Center logo on mobile */
+        justify-content: center;
     }
 
-    /* 4. Video Stage Scaling */
     .hero-visual.full-width {
         max-width: 100%;
         padding-bottom: 40px;
     }
 
-    /* 5. Install Pill Wrapping */
     .install-pill {
         padding: 12px 16px;
+        font-size: 0.75rem;
+        max-width: 90%;
+    }
+
+    .example-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding: 0 10px;
+    }
+
+    .terminal-mini {
+        padding: 16px;
+    }
+
+    .terminal-mini pre {
         font-size: 0.8rem;
-        width: 90%; /* Take up most of the screen width */
+    }
+
+    .os-toggle {
+        width: 90%;
         justify-content: center;
     }
 
-    .install-pill code {
-        word-break: break-all; /* Prevent horizontal overflow */
-        white-space: normal;
-    }
-}
-
-@media (max-width: 768px) {
-    .spotlight {
-        display: none; /* Mouse tracking doesn't exist on touch screens */
+    .os-btn {
+        flex: 1;
+        text-align: center;
     }
 }
