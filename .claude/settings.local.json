@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(python -m py_compile hop2.py)",
-      "Bash(powershell -Command \"\ntry {\n    \\\\$null = [System.Management.Automation.Language.Parser]::ParseFile\\(\\(Resolve-Path 'init.ps1'\\).Path, [ref]\\\\$null, [ref]\\\\$null\\)\n    Write-Host 'init.ps1: OK'\n    \\\\$null = [System.Management.Automation.Language.Parser]::ParseFile\\(\\(Resolve-Path 'install.ps1'\\).Path, [ref]\\\\$null, [ref]\\\\$null\\)\n    Write-Host 'install.ps1: OK'\n} catch {\n    Write-Error \\\\\"Parse error: \\\\$_\\\\\"\n}\")",
-      "Bash(powershell -Command \"\n\\\\$errors = \\\\$null\n[System.Management.Automation.Language.Parser]::ParseFile\\(\\(Resolve-Path 'init.ps1'\\).Path, [ref]\\\\$null, [ref]\\\\$errors\\) | Out-Null\nif \\(\\\\$errors.Count -eq 0\\) { Write-Host 'init.ps1: OK' } else { \\\\$errors | ForEach-Object { Write-Host \\\\$_ } }\n\n[System.Management.Automation.Language.Parser]::ParseFile\\(\\(Resolve-Path 'install.ps1'\\).Path, [ref]\\\\$null, [ref]\\\\$errors\\) | Out-Null\nif \\(\\\\$errors.Count -eq 0\\) { Write-Host 'install.ps1: OK' } else { \\\\$errors | ForEach-Object { Write-Host \\\\$_ } }\n\")"
-    ]
-  }
-}
