@@ -23,6 +23,7 @@ hop2.db
 .pytest_cache/
 .coverage
 htmlcov/
+.claude
 
 # Distribution
 build/
