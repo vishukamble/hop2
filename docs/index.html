@@ -38,7 +38,7 @@
                  class="nav-logo-img">
         </a>
         <div class="nav-links">
-            <a href="#demo">Demo</a>
+            <a href="#demo-examples">Demo</a>
             <a href="#features">Features</a>
             <a href="#install">Install</a>
             <a href="https://github.com/vishukamble/hop2" target="_blank" class="btn-git">GitHub</a>
@@ -53,10 +53,16 @@
             <p class="tagline">The zero-dependency directory jumper for SREs and Devs who move fast.</p>
 
             <div class="hero-cta centered">
-                <div class="install-pill" onclick="copyInstall()">
-                    <span class="prompt">$</span>
-                    <span class="cmd">curl -sL https://install.hop2.tech | bash</span>
-                    <span class="copy-hint">Copy</span>
+                <div class="install-group">
+                    <div class="os-toggle">
+                        <button class="os-btn active" data-os="unix" onclick="switchOS('unix')">macOS / Linux</button>
+                        <button class="os-btn" data-os="win" onclick="switchOS('win')">Windows</button>
+                    </div>
+                    <div class="install-pill" onclick="copyInstall()">
+                        <span class="prompt">$</span>
+                        <span class="cmd">curl -sL https://install.hop2.tech | bash</span>
+                        <span class="copy-hint">Copy</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -143,7 +149,7 @@
             <div class="bento-item">
                 <div class="bento-icon">🐚</div>
                 <h3>Shell Agnostic</h3>
-                <p>Native support for Bash and Zsh on Linux & macOS.</p>
+                <p>Native support for Bash, Zsh, and PowerShell on Linux, macOS & Windows.</p>
             </div>
 
             <div class="bento-item">
@@ -160,20 +166,23 @@
             <div class="get-started-content">
                 <h2>Get Started</h2>
 
-                <div class="install-pill" onclick="copyInstall()">
-                    <code style="color: var(--text);">
-                        <span class="prompt">$</span> curl -sL https://install.hop2.tech | bash
-                    </code>
-                    <span class="copy-hint"
-                          style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; opacity: 0.5; border: 1px solid var(--border); padding: 4px 8px; border-radius: 6px;">Copy</span>
+                <div class="install-group">
+                    <div class="os-toggle">
+                        <button class="os-btn active" data-os="unix" onclick="switchOS('unix')">macOS / Linux</button>
+                        <button class="os-btn" data-os="win" onclick="switchOS('win')">Windows</button>
+                    </div>
+                    <div class="install-pill" onclick="copyInstall()">
+                        <span class="prompt">$</span>
+                        <span class="cmd">curl -sL https://install.hop2.tech | bash</span>
+                        <span class="copy-hint">Copy</span>
+                    </div>
                 </div>
 
-                <div id="commit-message" class="latest-activity"
-                     style="font-family: var(--mono); font-size: 0.85rem; color: var(--text-dim);">
-                </div>
+                <div id="commit-message" class="latest-activity"></div>
             </div>
         </div>
     </section>
+</main>
 
     <footer class="footer">
         <div class="container">
