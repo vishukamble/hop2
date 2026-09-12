@@ -21,13 +21,15 @@ A blazingly fast terminal navigator and command aliasing tool, built with Python
 -   **🚀 Blazingly Fast:** Written in Python with a lightweight SQLite database for instant lookups.
 -   **✨ Zero Dependencies:** Works out-of-the-box with just Python 3.
 -   **🐧 Simple & Predictable:** No fuzzy matching or AI. Just simple, explicit aliases that work every time.
--   **🐚 Multi-Shell Support:** Works seamlessly with `bash` and `zsh`.
+-   **🐚 Multi-Shell Support:** Works with `bash`, `zsh`, and PowerShell (Windows, macOS, Linux).
 
 ---
 
 ## 🚀 Installation
 
 Installation is a single command. The script will automatically detect your shell and set everything up.
+
+### macOS / Linux (bash, zsh)
 ```bash
 curl -sL install.hop2.tech | bash
 ```
@@ -40,6 +42,25 @@ source ~/.bashrc
 # For Zsh
 source ~/.zshrc
 ```
+
+### Windows (PowerShell)
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force
+iwr -useb https://install.hop2.tech/windows | iex
+```
+Then reload your profile:
+```powershell
+. $PROFILE
+```
+
+> **Note:** directory jumping requires PowerShell — `cmd.exe` isn't supported since it has no way to change the parent shell's working directory.
+
+### Alternative: pip / pipx
+
+```bash
+pipx install hop2
+```
+This installs the `hop2` CLI, but **not** the shell integration — you still need to source `init.sh` (bash/zsh) or dot-source `init.ps1` (PowerShell) for directory jumping (`cd` interception) to work, since that requires a shell function, not just an executable on `PATH`.
 
 ---
 
@@ -66,6 +87,9 @@ h buttons      # You are now in the frontend buttons directory
 ### Command Shortcuts
 
 Stop typing long commands over and over.
+
+> Command aliases run in your native shell (bash/zsh on macOS/Linux, PowerShell on Windows), so a shortcut saved on one platform may not work on another — the same way any shell command would.
+
 ```bash
 # Create an alias for a complex git log command
 hop2 cmd glog "git log --oneline --graph --all --decorate"

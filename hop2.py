@@ -15,13 +15,26 @@ import tempfile
 import shutil
 import json
 
+# Ensure emoji/Unicode output works even when stdout is a pipe on Windows
+# (default cp1252 would raise UnicodeEncodeError). errors="replace" keeps us
+# safe on consoles that still can't render a given glyph.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
+__version__ = "1.0.0"
+
 # Config
-DB_PATH = os.path.expanduser("~/.hop2/hop2.db")
+DB_PATH = os.environ.get("HOP2_DB", os.path.expanduser("~/.hop2/hop2.db"))
 DB_DIR = os.path.dirname(DB_PATH)
 
 # Reserved words
 RESERVED_ALIASES = [
-    'add', 'cmd', 'list', 'rm', 'go',
+    'add', 'cmd', 'list', 'ls', 'rm',
+    'update', 'backup', 'restore', 'uninstall',
     'help', '--help', '-h'
 ]
 
@@ -42,6 +55,7 @@ def print_help():
     print(f"{'  --restore <file>':<25} Restore from JSON backup")
     print(f"{'  --update':<25} Update hop2 to latest")
     print(f"{'  --uninstall':<25} Remove hop2 completely")
+    print(f"{'  --version':<25} Show hop2 version")
     print("\nExamples:")
     print("  hop2 add work          # Save current dir as 'work'")
     print("  hop2 work              # Jump to work directory")
@@ -67,42 +81,19 @@ def get_conn():
 
 def init_db():
     """Initialize the database"""
-    os.makedirs(DB_DIR, exist_ok=True)
-    with sqlite3.connect(DB_PATH) as conn:
+    with get_conn() as conn:
         c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS directories
-                     (
-                         alias
-                         TEXT
-                         PRIMARY
-                         KEY,
-                         path
-                         TEXT
-                         NOT
-                         NULL,
-                         created_at
-                         TEXT,
-                         uses
-                         INTEGER
-                         DEFAULT
-                         0
+        c.execute('''CREATE TABLE IF NOT EXISTS directories (
+                         alias TEXT PRIMARY KEY,
+                         path TEXT NOT NULL,
+                         created_at TEXT,
+                         uses INTEGER DEFAULT 0
                      )''')
-        c.execute('''CREATE TABLE IF NOT EXISTS commands
-                     (
-                         alias
-                         TEXT
-                         PRIMARY
-                         KEY,
-                         command
-                         TEXT
-                         NOT
-                         NULL,
-                         created_at
-                         TEXT,
-                         uses
-                         INTEGER
-                         DEFAULT
-                         0
+        c.execute('''CREATE TABLE IF NOT EXISTS commands (
+                         alias TEXT PRIMARY KEY,
+                         command TEXT NOT NULL,
+                         created_at TEXT,
+                         uses INTEGER DEFAULT 0
                      )''')
 
 
@@ -162,19 +153,20 @@ def add_command(alias, cmd_parts):
     return 0
 
 
-def get_directory(alias):
-    with sqlite3.connect(DB_PATH) as conn:
+def get_directory(alias, bump=True):
+    with get_conn() as conn:
         c = conn.cursor()
         c.execute("SELECT path FROM directories WHERE alias = ?", (alias,))
         row = c.fetchone()
         if row:
-            c.execute("UPDATE directories SET uses = uses + 1 WHERE alias = ?", (alias,))
+            if bump:
+                c.execute("UPDATE directories SET uses = uses + 1 WHERE alias = ?", (alias,))
             return row[0]
     return None
 
 
 def get_command(alias):
-    with sqlite3.connect(DB_PATH) as conn:
+    with get_conn() as conn:
         c = conn.cursor()
         c.execute("SELECT command FROM commands WHERE alias = ?", (alias,))
         row = c.fetchone()
@@ -186,8 +178,7 @@ def get_command(alias):
 
 def list_all(_=None):
     """Lists all shortcuts, visualizing directory paths from a common root."""
-    with sqlite3.connect(DB_PATH) as conn:
-        conn.row_factory = sqlite3.Row  # Make sure we can access columns by name
+    with get_conn() as conn:
         c = conn.cursor()
         c.execute("SELECT alias, path, uses FROM directories ORDER BY path")
         dirs = c.fetchall()
@@ -278,8 +269,9 @@ def run_command(alias, extra_args=None):
     cmd = get_command(alias)
     if cmd:
         full = f"{cmd} {' '.join(extra_args)}" if extra_args else cmd
-        print(f"→ Running: {full}")
-        subprocess.run(full, shell=True)
+        # Let the calling shell run this so the command gets a real TTY
+        # (live output, colors, pagers, prompts all work).
+        print(f"__HOP2_RUN:{full}")
         return True
     return False
 
@@ -290,8 +282,13 @@ def backup_data(filename=None):
         # Default filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"hop2_backup_{timestamp}.json"
+    elif os.path.exists(filename):
+        ans = input(f"⚠️  {filename} exists. Overwrite? [y/N]: ")
+        if ans.lower() != 'y':
+            print("❌ Backup cancelled.")
+            return 1
 
-    backup_data = {
+    payload = {
         "version": "2.0",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "database": {
@@ -306,7 +303,7 @@ def backup_data(filename=None):
         # Get directories
         c.execute("SELECT alias, path, created_at, uses FROM directories")
         for row in c.fetchall():
-            backup_data["database"]["directories"].append({
+            payload["database"]["directories"].append({
                 "alias": row[0],
                 "path": row[1],
                 "created_at": row[2],
@@ -316,7 +313,7 @@ def backup_data(filename=None):
         # Get commands
         c.execute("SELECT alias, command, created_at, uses FROM commands")
         for row in c.fetchall():
-            backup_data["database"]["commands"].append({
+            payload["database"]["commands"].append({
                 "alias": row[0],
                 "command": row[1],
                 "created_at": row[2],
@@ -325,10 +322,10 @@ def backup_data(filename=None):
 
     # Write to file
     with open(filename, 'w') as f:
-        json.dump(backup_data, f, indent=2)
+        json.dump(payload, f, indent=2)
 
-    total_dirs = len(backup_data["database"]["directories"])
-    total_cmds = len(backup_data["database"]["commands"])
+    total_dirs = len(payload["database"]["directories"])
+    total_cmds = len(payload["database"]["commands"])
 
     print(f"✅ Backup saved to: {filename}")
     print(f"   • {total_dirs} directories")
@@ -649,6 +646,7 @@ def main():
         add_help=False  # We use a custom help function
     )
     parser.add_argument('-h', '--help', action='store_true', help=argparse.SUPPRESS)
+    parser.add_argument('--version', action='store_true', help="Show hop2 version and exit.")
     parser.add_argument('--uninstall', action='store_true', help="Uninstall hop2 from your system.")
     parser.add_argument('--update', action='store_true', help="Update hop2 to the latest version.")
     parser.add_argument('--backup', nargs='?', const=True, metavar='FILE',
@@ -661,6 +659,10 @@ def main():
     # Handle top-level flags immediately
     if args.help:
         print_help()
+        sys.exit(0)
+
+    if args.version:
+        print(f"hop2 {__version__}")
         sys.exit(0)
 
     if args.uninstall:
@@ -700,18 +702,16 @@ def main():
     init_db()
 
     # If it's NOT a known subcommand, treat it as a custom alias
-    # In your main() function, update the alias-handling block:
-    # If it's NOT a known subcommand, treat it as a custom alias
     if command_to_run not in known_subcommands:
         alias = command_to_run
         extra_args = sys.argv[2:]
 
-        path = get_directory(alias)
+        path = get_directory(alias, bump=False)
         if path:
             if extra_args:
-                # New emoji for this error
                 print(f"❌ Directory shortcuts do not accept arguments. Did you mean 'cd {path}'?")
                 sys.exit(1)
+            get_directory(alias)  # count the successful hop
             print(f"__HOP2_CD:{path}")
             sys.exit(0)
 
@@ -743,9 +743,6 @@ def main():
     p_rm = sp.add_parser('rm')
     p_rm.add_argument('alias')
     p_rm.set_defaults(func=lambda a: remove_shortcut(a.alias))
-
-    p = sp.add_parser('update', help='Alias for update')
-    p.set_defaults(func=lambda a: update_me())
 
     try:
         parsed_args = sub_parser.parse_args()

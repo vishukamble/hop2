@@ -27,6 +27,11 @@ hop2() {
     if [[ $output == __HOP2_CD:* ]]; then
         local path="${output#__HOP2_CD:}"
         cd "$path" || return 1
+    elif [[ $output == __HOP2_RUN:* ]]; then
+        # Run command aliases in the real shell so they get a live TTY
+        # (colors, pagers, interactive prompts all work).
+        local runcmd="${output#__HOP2_RUN:}"
+        eval "$runcmd"
     elif [ $exit_code -ne 0 ]; then
         # If the script failed, print its output (which is the error message)
         # to stderr and preserve the exit code.
@@ -58,7 +63,7 @@ if [ -n "$BASH_VERSION" ]; then
       prev="${COMP_WORDS[COMP_CWORD-1]}"
 
       if (( COMP_CWORD == 1 )); then
-        commands="add cmd list ls rm go --update --uninstall --backup --restore --help"
+        commands="add cmd list ls rm --update --uninstall --backup --restore --version --help"
 
         aliases=$(sqlite3 ~/.hop2/hop2.db \
           "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null \
@@ -68,7 +73,7 @@ if [ -n "$BASH_VERSION" ]; then
       fi
 
       case "$prev" in
-        rm|go)
+        rm)
           aliases=$(sqlite3 ~/.hop2/hop2.db \
             "SELECT alias FROM directories UNION SELECT alias FROM commands" 2>/dev/null \
              | tr '\n' ' ')
@@ -94,7 +99,7 @@ if [ -n "$ZSH_VERSION" ]; then
     _hop2() {
         local -a all_aliases
         all_aliases=(${(f)"$(sqlite3 ~/.hop2/hop2.db 'SELECT alias FROM directories UNION SELECT alias FROM commands' 2>/dev/null)"})
-        _arguments "1:command:(add cmd list ls rm --backup --restore --update --uninstall $all_aliases)"
+        _arguments "1:command:(add cmd list ls rm --backup --restore --update --uninstall --version $all_aliases)"
     }
 
     # Only set up completion if compdef is available

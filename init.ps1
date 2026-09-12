@@ -4,6 +4,12 @@
 
 $script:Hop2Script = Join-Path $HOME '.hop2\hop2.py'
 
+# Make sure Python emits UTF-8 and PowerShell decodes captured output as UTF-8
+# (otherwise emoji output crashes or renders as mojibake on Windows).
+$env:PYTHONUTF8 = '1'
+$env:PYTHONIOENCODING = 'utf-8'
+try { [Console]::OutputEncoding = [System.Text.Encoding]::UTF8 } catch {}
+
 # Detect Python 3 executable once at load time
 $script:Hop2Python = $null
 foreach ($candidate in @('python', 'python3', 'py')) {
@@ -51,6 +57,10 @@ function hop2 {
             Write-Error "hop2: Directory not found: $targetPath"
             return 1
         }
+    } elseif ($outputStr -match '^__HOP2_RUN:(.+)$') {
+        # Run command aliases in the real shell so they get a live TTY
+        # (colors, pagers, interactive prompts all work).
+        Invoke-Expression $Matches[1]
     } elseif ($exitCode -ne 0) {
         if ($outputStr) { Write-Host $outputStr -ForegroundColor Red }
         return $exitCode
@@ -78,7 +88,7 @@ Register-ArgumentCompleter -CommandName @('hop2', 'h') -ScriptBlock {
 
     $builtins = @(
         'add', 'cmd', 'list', 'ls', 'rm',
-        '--backup', '--restore', '--update', '--uninstall', '--help'
+        '--backup', '--restore', '--update', '--uninstall', '--version', '--help'
     )
 
     $dbPath = Join-Path $HOME '.hop2\hop2.db'
