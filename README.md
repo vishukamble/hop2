@@ -21,7 +21,7 @@ A blazingly fast terminal navigator and command aliasing tool, built with Python
 -   **🚀 Blazingly Fast:** Written in Python with a lightweight SQLite database for instant lookups.
 -   **✨ Zero Dependencies:** Works out-of-the-box with just Python 3.
 -   **🐧 Simple & Predictable:** No fuzzy matching or AI. Just simple, explicit aliases that work every time.
--   **🐚 Multi-Shell Support:** Works with `bash`, `zsh`, and PowerShell (Windows, macOS, Linux).
+-   **🐚 Multi-Shell Support:** Works with `bash`, `zsh` on macOS/Linux, and PowerShell on Windows.
 
 ---
 
@@ -53,14 +53,9 @@ Then reload your profile:
 . $PROFILE
 ```
 
-> **Note:** directory jumping requires PowerShell — `cmd.exe` isn't supported since it has no way to change the parent shell's working directory.
+> **Note:** directory jumping requires PowerShell — `cmd.exe` isn't supported since it has no way to change the parent shell's working directory. PowerShell support is Windows-only; `install.ps1` relies on Windows-specific PATH/registry APIs and hasn't been tested under PowerShell on macOS/Linux.
 
-### Alternative: pip / pipx
-
-```bash
-pipx install hop2
-```
-This installs the `hop2` CLI, but **not** the shell integration — you still need to source `init.sh` (bash/zsh) or dot-source `init.ps1` (PowerShell) for directory jumping (`cd` interception) to work, since that requires a shell function, not just an executable on `PATH`.
+The `pyproject.toml` in this repo is for **contributors** (`pip install -e .` to get a `hop2` command while developing/testing) — it's not a supported end-user install method, since it doesn't set up the shell integration (`init.sh`/`init.ps1`) that directory jumping depends on. Use one of the installers above instead.
 
 ---
 

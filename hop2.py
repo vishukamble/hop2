@@ -571,6 +571,11 @@ def uninstall_me(_=None):
     else:
         for d in ['/usr/local/bin', os.path.expanduser('~/.local/bin'), os.path.expanduser('~/bin')]:
             p = os.path.join(d, 'hop2')
+            # Skip symlinks: our installer always places a plain file here, so a
+            # symlink means this path is managed by something else (e.g. a pipx
+            # shim pointing into its own venv) and isn't ours to remove.
+            if os.path.islink(p):
+                continue
             if os.path.exists(p):
                 try:
                     os.remove(p)

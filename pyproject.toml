@@ -1,3 +1,8 @@
+# This packaging config is for CONTRIBUTORS ONLY (`pip install -e .` to get a
+# `hop2` command on PATH while developing/testing). It is not a supported
+# end-user install method: it doesn't ship or wire up the shell integration
+# scripts (init.sh / init.ps1) that directory jumping depends on. End users
+# should use the installers documented in README.md instead.
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
@@ -5,7 +10,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "hop2"
 version = "1.0.0"
-description = "Quick directory and command aliasing for the terminal"
+description = "Quick directory and command aliasing for the terminal (dev packaging only — see README for end-user install)"
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }

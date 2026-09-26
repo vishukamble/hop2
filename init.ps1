@@ -72,6 +72,13 @@ function hop2 {
 # ---------------------------------------------------------------------------
 # Short alias 'h'
 # ---------------------------------------------------------------------------
+# PowerShell ships a built-in alias 'h' -> Get-History, and aliases take
+# precedence over functions during command resolution, so it would otherwise
+# always shadow the function below.
+if (Test-Path Alias:h) {
+    Remove-Item Alias:h -Force
+}
+
 function h {
     if ($args.Count -eq 0) {
         hop2 list

@@ -174,11 +174,19 @@ Write-Host "  [6/6] Configuring PowerShell profiles..."
 
 # Set execution policy to RemoteSigned for the current user so that
 # init.ps1 (downloaded from the internet) can be dot-sourced.
-# This scope does NOT require admin rights.
-$policy = Get-ExecutionPolicy -Scope CurrentUser
-if ($policy -in @('Undefined', 'Restricted')) {
-    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-    Write-Host "         Execution policy set to RemoteSigned for current user." -ForegroundColor Green
+# This scope does NOT require admin rights. Best-effort: some machines have
+# execution policy locked down by Group Policy at a more specific scope, in
+# which case this fails but the effective policy (shown in the error) is
+# usually already permissive enough — don't let it abort the rest of setup.
+try {
+    $policy = Get-ExecutionPolicy -Scope CurrentUser
+    if ($policy -in @('Undefined', 'Restricted')) {
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+        Write-Host "         Execution policy set to RemoteSigned for current user." -ForegroundColor Green
+    }
+} catch {
+    Write-Host "         Could not set execution policy (likely locked by Group Policy)." -ForegroundColor Yellow
+    Write-Host "         Continuing - your effective policy may already allow this." -ForegroundColor Yellow
 }
 
 # Unblock downloaded files (marks them as trusted even if downloaded from the internet)
